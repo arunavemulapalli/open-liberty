@@ -56,7 +56,7 @@ public class JakartaOidcAuthorizationRequest extends AuthorizationRequest {
         instantiateStorage(config);
     }
 
-    private void instantiateStorage(OidcClientConfig config) {
+    /*private void instantiateStorage(OidcClientConfig config) {
         if (config.isUseSession()) {
             this.storage = new SessionBasedStorage(request);
             this.storageType = StorageType.SESSION;
@@ -64,7 +64,7 @@ public class JakartaOidcAuthorizationRequest extends AuthorizationRequest {
             this.storage = new CookieBasedStorage(request, response);
             this.storageType = StorageType.COOKIE;
         }
-    }
+    }*/
 
     @Override
     @FFDCIgnore(Exception.class)

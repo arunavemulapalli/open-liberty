@@ -11,23 +11,36 @@
 package io.openliberty.security.oidcclientcore.token;
 
 import io.openliberty.security.oidcclientcore.client.OidcClientConfig;
+import io.openliberty.security.oidcclientcore.storage.OidcStorageUtils;
 
 /**
  *
  */
 public class IdTokenValidator extends TokenValidator {
-    
+
     String nonce;
+    String clientid;
+    private String state;
 
     /**
      * @param clientConfig
      */
     public IdTokenValidator(OidcClientConfig clientConfig) {
         super(clientConfig);
+        clientid = clientConfig.getClientId();
     }
-    
+
     public IdTokenValidator nonce(String nonce) {
         this.nonce = nonce;
+        return this;
+    }
+    
+
+    /**
+     * @param string
+     */
+    public IdTokenValidator state(String state) {
+        this.state = state;
         return this;
     }
 
@@ -35,10 +48,13 @@ public class IdTokenValidator extends TokenValidator {
     public void validate() throws TokenValidationException {
         super.validate();
         validateNonce();
-        
+
     }
+
     void validateNonce() throws TokenValidationException {
         // TODO : need access to Storage and state param value to compute nonce
+        String cookieName = OidcStorageUtils.getNonceStorageKey(clientid, state);
     }
+
 
 }

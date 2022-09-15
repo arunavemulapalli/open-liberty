@@ -11,6 +11,8 @@
 package io.openliberty.security.oidcclientcore.http;
 
 import javax.net.ssl.SSLSocketFactory;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -27,14 +29,37 @@ import io.openliberty.security.oidcclientcore.discovery.DiscoveryHandler;
 import io.openliberty.security.oidcclientcore.discovery.OidcDiscoveryConstants;
 import io.openliberty.security.oidcclientcore.exceptions.OidcClientConfigurationException;
 import io.openliberty.security.oidcclientcore.exceptions.OidcDiscoveryException;
+import io.openliberty.security.oidcclientcore.storage.CookieBasedStorage;
+import io.openliberty.security.oidcclientcore.storage.SessionBasedStorage;
+import io.openliberty.security.oidcclientcore.storage.Storage;
 
 @Component(service = EndpointRequest.class, immediate = true, configurationPolicy = ConfigurationPolicy.IGNORE)
 public class EndpointRequest {
 
     public static final TraceComponent tc = Tr.register(EndpointRequest.class);
+    protected HttpServletRequest request;
+    protected HttpServletResponse response;
+    protected String clientId;
 
     private static final String KEY_SSL_SUPPORT = "sslSupport";
     private static volatile SSLSupport sslSupport;
+
+    protected Storage storage;
+    private enum StorageType {
+        COOKIE, SESSION
+    }
+    private StorageType storageType;
+
+    /**
+     * @param request
+     * @param response
+     * @param clientId
+     */
+    public EndpointRequest(HttpServletRequest request, HttpServletResponse response, String clientId) {
+        this.request = request;
+        this.response = response;
+        this.clientId = clientId;
+    }
 
     @Reference(name = KEY_SSL_SUPPORT, policy = ReferencePolicy.DYNAMIC)
     protected void setSslSupport(SSLSupport sslSupportSvc) {
@@ -50,6 +75,20 @@ public class EndpointRequest {
             return sslSupport.getSSLSocketFactory();
         }
         return null;
+    }
+    
+    protected void instantiateStorage(OidcClientConfig config) {
+        if (config.isUseSession()) {
+            this.storage = new SessionBasedStorage(request);
+            this.storageType = StorageType.SESSION;
+        } else {
+            this.storage = new CookieBasedStorage(request, response);
+            this.storageType = StorageType.COOKIE;
+        }
+    }
+    
+    public Storage getStorage() {
+        return this.storage;
     }
 
     public DiscoveryHandler getDiscoveryHandler() {
