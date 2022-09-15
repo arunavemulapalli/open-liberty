@@ -10,8 +10,11 @@
  *******************************************************************************/
 package io.openliberty.security.oidcclientcore.token;
 
+import com.ibm.websphere.ras.annotation.Sensitive;
+
 import io.openliberty.security.oidcclientcore.client.OidcClientConfig;
 import io.openliberty.security.oidcclientcore.storage.OidcStorageUtils;
+import io.openliberty.security.oidcclientcore.storage.Storage;
 
 /**
  *
@@ -21,6 +24,8 @@ public class IdTokenValidator extends TokenValidator {
     String nonce;
     String clientid;
     private String state;
+    private Storage storage;
+    private String secret;
 
     /**
      * @param clientConfig
@@ -35,13 +40,28 @@ public class IdTokenValidator extends TokenValidator {
         return this;
     }
     
-
     /**
      * @param string
      */
     public IdTokenValidator state(String state) {
         this.state = state;
         return this;
+    }
+    
+    /**
+     * @param storage
+     */
+    public IdTokenValidator storage(Storage storage) {
+        this.storage = storage;
+        return this;
+    }
+    
+    /**
+     * @param clientSecret
+     */
+    public IdTokenValidator secret(@Sensitive String clientSecret) {
+        this.secret = clientSecret;
+        return this;   
     }
 
     @Override
@@ -51,10 +71,12 @@ public class IdTokenValidator extends TokenValidator {
 
     }
 
-    void validateNonce() throws TokenValidationException {
-        // TODO : need access to Storage and state param value to compute nonce
+    protected boolean validateNonce() throws TokenValidationException {
         String cookieName = OidcStorageUtils.getNonceStorageKey(clientid, state);
+        String cookieValue = OidcStorageUtils.createNonceStorageValue(nonce, state, secret);
+        String storedCookieValue = storage.get(cookieName);
+        storage.remove(cookieName);
+        return cookieValue.equals(storedCookieValue);        
     }
-
 
 }

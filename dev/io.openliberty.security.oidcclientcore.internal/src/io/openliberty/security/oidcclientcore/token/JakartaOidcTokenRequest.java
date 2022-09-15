@@ -44,6 +44,7 @@ public class JakartaOidcTokenRequest extends EndpointRequest {
     private final HttpServletRequest request;
 
     public JakartaOidcTokenRequest(OidcClientConfig oidcClientConfig, HttpServletRequest request) {
+        
         this.oidcClientConfig = oidcClientConfig;
         this.providerMetadata = (oidcClientConfig == null) ? null : oidcClientConfig.getProviderMetadata();
         this.request = request;

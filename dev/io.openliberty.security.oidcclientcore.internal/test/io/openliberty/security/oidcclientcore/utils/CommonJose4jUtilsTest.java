@@ -92,7 +92,7 @@ public class CommonJose4jUtilsTest {
      * Test method for {@link io.openliberty.security.oidcclientcore.utils.CommonJose4jUtils#signaturevalidationbuilder()}.
      */
     @Test
-    public void testSignaturevalidationbuilder() {
+    public void testSignaturevalidationbuilderWrongExp() {
         
         tokenSignatureValidationBuilder.signature(jsonStruct)
                                        .sslsupport(sslSupport)
@@ -110,6 +110,7 @@ public class CommonJose4jUtilsTest {
         } catch (InterruptedException e) {
             outputMgr.failWithThrowable("signature validation", e);
         } catch (Exception e) {
+            String message = e.getMessage();
             outputMgr.failWithThrowable("signature validation", e);
         }        
     }

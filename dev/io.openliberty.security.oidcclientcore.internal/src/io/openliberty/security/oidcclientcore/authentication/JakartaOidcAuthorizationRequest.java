@@ -38,14 +38,14 @@ public class JakartaOidcAuthorizationRequest extends AuthorizationRequest {
 
     public static final TraceComponent tc = Tr.register(JakartaOidcAuthorizationRequest.class);
 
-    private enum StorageType {
+   /* private enum StorageType {
         COOKIE, SESSION
-    }
+    }*/
 
     private OidcClientConfig config = null;
     private OidcProviderMetadata providerMetadata = null;
 
-    private StorageType storageType;
+    //private StorageType storageType;
 
     protected AuthorizationRequestUtils requestUtils = new AuthorizationRequestUtils();
 
@@ -53,7 +53,7 @@ public class JakartaOidcAuthorizationRequest extends AuthorizationRequest {
         super(request, response, config.getClientId());
         this.config = config;
         this.providerMetadata = (config == null) ? null : config.getProviderMetadata();
-        instantiateStorage(config);
+        instantiateStorage(config, request, response);
     }
 
     /*private void instantiateStorage(OidcClientConfig config) {

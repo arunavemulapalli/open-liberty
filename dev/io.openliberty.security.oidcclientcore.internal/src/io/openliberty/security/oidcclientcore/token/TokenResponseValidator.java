@@ -94,6 +94,11 @@ public class TokenResponseValidator {
         JwtClaims jwtClaims = null;
         if (jwtcontext != null && jwtcontext.getJwtClaims() != null) {
             jwtClaims = jwtcontext.getJwtClaims();
+            String clientSecret = null;
+            ProtectedString clientSecretProtectedString = clientConfig.getClientSecret();
+            if (clientSecretProtectedString != null) {
+                clientSecret = new String(clientSecretProtectedString.getChars());
+            }
             // must have claims - iat and exp
             try {
                 if (jwtClaims.getIssuedAt() == null) {
@@ -106,6 +111,10 @@ public class TokenResponseValidator {
                 tokenValidator.issuer(jwtClaims.getIssuer()).subject(jwtClaims.getSubject()).audiences(jwtClaims.getAudience()).azp(((String) jwtClaims.getClaimValue("azp"))).iat(jwtClaims.getIssuedAt()).exp(jwtClaims.getExpirationTime()).nbf(jwtClaims.getNotBefore());
                 if (jwtClaims.hasClaim("nonce")) {
                     ((IdTokenValidator) tokenValidator).nonce(((String) jwtClaims.getClaimValue("nonce")));
+                    String state = getStateParam();
+                    ((IdTokenValidator) tokenValidator).state(state);
+                    ((IdTokenValidator) tokenValidator).secret(clientSecret);
+                    ((IdTokenValidator) tokenValidator).storage(eprequest.getStorage());
                     ((IdTokenValidator) tokenValidator).validate();
                 } else {
                     tokenValidator.validate();
@@ -113,31 +122,40 @@ public class TokenResponseValidator {
             } catch (MalformedClaimException e) {
                 throw new TokenValidationException(this.clientConfig.getClientId(), e.getMessage());
             }
+            
+            
+            try {
+                JsonWebStructure jsonStruct = jose4jutil.getJsonWebStructureFromJwtContext(jwtcontext);
+                if (jsonStruct == null || !(jsonStruct instanceof JsonWebSignature)) {
+                    throw new TokenValidationException(this.clientConfig.getClientId(),"jsonwebsignature error");
+                }
+                TokenSignatureValidationBuilder tokenSignatureValidationBuilder = jose4jutil.signaturevalidationbuilder();
+                     
+                tokenSignatureValidationBuilder.signature(jsonStruct)
+                                               .sslsupport(sslSupport)
+                                               .issuer(TokenValidator.getIssuer(clientConfig))
+                                               .jwkuri(clientConfig.getProviderMetadata().getJwksURI()) //TODO : use discover data if needed
+                                               .clientid(clientConfig.getClientId());
 
-        }
-        
-        try {
-            JsonWebStructure jsonStruct = jose4jutil.getJsonWebStructureFromJwtContext(jwtcontext);
-            if (jsonStruct == null || !(jsonStruct instanceof JsonWebSignature)) {
-                throw new TokenValidationException(this.clientConfig.getClientId(),"jsonwebsignature error");
+                tokenSignatureValidationBuilder.clientsecret(clientSecret);
+                tokenSignatureValidationBuilder.parseJwtWithValidation(idtoken);
+            }catch (Exception e) {
+                throw new TokenValidationException(this.clientConfig.getClientId(), e.getMessage());
             }
-            TokenSignatureValidationBuilder tokenSignatureValidationBuilder = jose4jutil.signaturevalidationbuilder();
-                 
-            tokenSignatureValidationBuilder.signature(jsonStruct)
-                                           .sslsupport(sslSupport)
-                                           .issuer(TokenValidator.getIssuer(clientConfig))
-                                           .jwkuri(clientConfig.getProviderMetadata().getJwksURI()) //TODO : use discover data if needed
-                                           .clientid(clientConfig.getClientId());
-            String clientSecret = null;
-            ProtectedString clientSecretProtectedString = clientConfig.getClientSecret();
-            if (clientSecretProtectedString != null) {
-                clientSecret = new String(clientSecretProtectedString.getChars());
-            }
-            tokenSignatureValidationBuilder.clientsecret(clientSecret);
-            tokenSignatureValidationBuilder.parseJwtWithValidation(idtoken);
-        }catch (Exception e) {
-            throw new TokenValidationException(this.clientConfig.getClientId(), e.getMessage());
         }
+    }
+
+    /**
+     * @return
+     */
+    private String getStateParam() throws TokenValidationException {
+        String state = null;
+        if (eprequest != null) {
+            state = eprequest.getStateParameter();
+        }
+        return state;
+
+        //TODO: maybe throw an exception right here if this state is not valid
     }
 
 }

@@ -37,17 +37,20 @@ import io.openliberty.security.oidcclientcore.storage.Storage;
 public class EndpointRequest {
 
     public static final TraceComponent tc = Tr.register(EndpointRequest.class);
-    protected HttpServletRequest request;
-    protected HttpServletResponse response;
-    protected String clientId;
+    //protected HttpServletRequest request;
+    //protected HttpServletResponse response;
+    //protected String clientId;
+    protected String state;
 
     private static final String KEY_SSL_SUPPORT = "sslSupport";
     private static volatile SSLSupport sslSupport;
 
     protected Storage storage;
+
     private enum StorageType {
         COOKIE, SESSION
     }
+
     private StorageType storageType;
 
     /**
@@ -55,11 +58,13 @@ public class EndpointRequest {
      * @param response
      * @param clientId
      */
-    public EndpointRequest(HttpServletRequest request, HttpServletResponse response, String clientId) {
-        this.request = request;
-        this.response = response;
-        this.clientId = clientId;
-    }
+    /*
+     * public EndpointRequest(HttpServletRequest request, HttpServletResponse response, String clientId) {
+     * this.request = request;
+     * this.response = response;
+     * this.clientId = clientId;
+     * }
+     */
 
     @Reference(name = KEY_SSL_SUPPORT, policy = ReferencePolicy.DYNAMIC)
     protected void setSslSupport(SSLSupport sslSupportSvc) {
@@ -76,8 +81,8 @@ public class EndpointRequest {
         }
         return null;
     }
-    
-    protected void instantiateStorage(OidcClientConfig config) {
+
+    protected void instantiateStorage(OidcClientConfig config, HttpServletRequest request, HttpServletResponse response) {
         if (config.isUseSession()) {
             this.storage = new SessionBasedStorage(request);
             this.storageType = StorageType.SESSION;
@@ -86,7 +91,15 @@ public class EndpointRequest {
             this.storageType = StorageType.COOKIE;
         }
     }
-    
+
+    protected void saveStateParameter(String stateParam) {
+        this.state = stateParam;
+    }
+
+    public String getStateParameter() {
+        return this.state;
+    }
+
     public Storage getStorage() {
         return this.storage;
     }

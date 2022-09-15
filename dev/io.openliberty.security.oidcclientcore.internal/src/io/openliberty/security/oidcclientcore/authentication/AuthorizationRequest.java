@@ -26,15 +26,18 @@ import io.openliberty.security.oidcclientcore.storage.StorageProperties;
 public abstract class AuthorizationRequest extends EndpointRequest {
 
     /*protected Storage storage;*/
+    protected HttpServletRequest request;
+    protected HttpServletResponse response;
+    protected String clientId;
 
     protected AuthorizationRequestUtils requestUtils = new AuthorizationRequestUtils();
     protected OidcStorageUtils storageUtils = new OidcStorageUtils();
 
     public AuthorizationRequest(HttpServletRequest request, HttpServletResponse response, String clientId) {
-       /* this.request = request;
+        this.request = request;
         this.response = response;
-        this.clientId = clientId; */
-        super(request, response, clientId);
+        this.clientId = clientId;
+        //super(request, response, clientId);
     }
 
     public ProviderAuthenticationResult sendRequest() throws OidcClientConfigurationException, OidcDiscoveryException {
@@ -79,6 +82,7 @@ public abstract class AuthorizationRequest extends EndpointRequest {
     }
 
     protected void storeStateValue(String state) {
+        saveStateParameter(state);
         String storageName = OidcStorageUtils.getStateStorageKey(state);
         String storageValue = createStateValueForStorage(state);
         StorageProperties stateStorageProperties = getStateStorageProperties();
