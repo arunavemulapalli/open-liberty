@@ -70,7 +70,7 @@ public class EndpointRequest {
         sslSupport = null;
     }
 
-    protected SSLSocketFactory getSSLSocketFactory() {
+    public SSLSocketFactory getSSLSocketFactory() {
         if (sslSupport != null) {
             return sslSupport.getSSLSocketFactory();
         }
