@@ -31,6 +31,7 @@ import com.ibm.websphere.security.jwt.KeyException;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 import com.ibm.ws.security.common.jwk.impl.JwKRetriever;
 import com.ibm.ws.security.common.jwk.impl.JwkKidBuilder;
+import com.ibm.ws.security.common.jwk.utils.JsonUtils;
 import com.ibm.ws.security.jwt.config.JwtConfig;
 import com.ibm.ws.security.jwt.config.JwtConsumerConfig;
 import com.ibm.ws.security.jwt.config.MpConfigProperties;
@@ -40,10 +41,6 @@ import com.ibm.ws.security.jwt.internal.JwtTokenException;
 public class JweHelper {
 
     private static final TraceComponent tc = Tr.register(JweHelper.class);
-
-    private static final String NOT_PERIOD = "[^\\.]";
-    private static final Pattern JWS_PATTERN = Pattern.compile("^(" + NOT_PERIOD + "*\\.){2}" + NOT_PERIOD + "*$");
-    private static final Pattern JWE_PATTERN = Pattern.compile("^(" + NOT_PERIOD + "*\\.){4}" + NOT_PERIOD + "*$");
 
     @FFDCIgnore({ Exception.class })
     public static String createJweString(String jws, JwtData jwtData) throws Exception {
@@ -60,24 +57,6 @@ public class JweHelper {
             String errorMsg = Tr.formatMessage(tc, "ERROR_BUILDING_SIGNED_JWE", new Object[] { jwtConfig.getId(), e });
             throw new Exception(errorMsg, e);
         }
-    }
-
-    public static boolean isJws(String jwtString) {
-        if (jwtString == null || jwtString.isEmpty()) {
-            return false;
-        }
-
-        Matcher m = JWS_PATTERN.matcher(jwtString);
-        return m.matches();
-    }
-
-    public static boolean isJwe(String jwtString) {
-        if (jwtString == null || jwtString.isEmpty()) {
-            return false;
-        }
-
-        Matcher m = JWE_PATTERN.matcher(jwtString);
-        return m.matches();
     }
 
     /**
@@ -125,7 +104,7 @@ public class JweHelper {
 
     public static String extractJwsFromJweToken(String jweString, JwtConsumerConfig config, MpConfigProperties mpConfigProps) throws InvalidTokenException {
         String payload = extractPayloadFromJweToken(jweString, config, mpConfigProps);
-        if (!isJws(payload)) {
+        if (!(JsonUtils.isJws(payload))) {
             String errorMsg = Tr.formatMessage(tc, "NESTED_JWS_REQUIRED_BUT_NOT_FOUND");
             throw new InvalidTokenException(errorMsg);
         }
@@ -159,7 +138,7 @@ public class JweHelper {
         jwe.setCompactSerialization(jweString);
         jwe.setKey(decryptionKey);
         String payload = jwe.getPayload();
-        if (isJws(payload)) {
+        if (JsonUtils.isJws(payload)) {
             verifyContentType(jwe);
         }
         return payload;

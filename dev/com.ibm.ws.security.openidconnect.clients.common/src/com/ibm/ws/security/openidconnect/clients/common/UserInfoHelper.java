@@ -25,6 +25,7 @@ import com.ibm.json.java.JSONObject;
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
+import com.ibm.ws.security.common.jwk.utils.JsonUtils;
 import com.ibm.ws.security.jwt.utils.JweHelper;
 import com.ibm.ws.security.openidconnect.client.jose4j.util.Jose4jUtil;
 import com.ibm.ws.security.openidconnect.client.jose4j.util.OidcTokenImplBase;
@@ -219,11 +220,11 @@ public class UserInfoHelper {
         }
         boolean isJwe = false;
         try {
-            if (JweHelper.isJwe(responseString)) {
+            if (JsonUtils.isJwe(responseString)) {
                 responseString = JweHelper.extractPayloadFromJweToken(responseString, clientConfig, null);
                 isJwe = true;
             }
-            if (JweHelper.isJws(responseString)) {
+            if (JsonUtils.isJws(responseString)) {
                 return extractClaimsFromJwsResponse(responseString, clientConfig, oidcClientRequest);
             } else if (isJwe) {
                 // JWE payloads can be either JWS or JSON, so allow falling back to returning JSON in the case of a JWE response

@@ -39,6 +39,7 @@ import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 import com.ibm.ws.kernel.productinfo.ProductInfo;
 import com.ibm.ws.security.authentication.AuthenticationConstants;
 import com.ibm.ws.security.common.jwk.impl.JwKRetriever;
+import com.ibm.ws.security.common.jwk.utils.JsonUtils;
 import com.ibm.ws.security.common.web.WebSSOUtils;
 import com.ibm.ws.security.jwt.utils.JweHelper;
 import com.ibm.ws.security.openidconnect.clients.common.AttributeToSubject;
@@ -254,11 +255,11 @@ public class Jose4jUtil extends CommonJose4jUtils {
     }
 
     public void checkJwtFormatAgainstConfigRequirements(String jwtString, ConvergedClientConfig clientConfig) throws JWTTokenValidationFailedException {
-        if (JweHelper.isJwsRequired(clientConfig) && !JweHelper.isJws(jwtString)) {
+        if (JweHelper.isJwsRequired(clientConfig) && !JsonUtils.isJws(jwtString)) {
             String errorMsg = Tr.formatMessage(tc, "OIDC_CLIENT_JWS_REQUIRED_BUT_TOKEN_NOT_JWS", new Object[] { clientConfig.getId() });
             throw new JWTTokenValidationFailedException(errorMsg);
         }
-        if (JweHelper.isJweRequired(clientConfig) && !JweHelper.isJwe(jwtString)) {
+        if (JweHelper.isJweRequired(clientConfig) && !JsonUtils.isJwe(jwtString)) {
             String errorMsg = Tr.formatMessage(tc, "OIDC_CLIENT_JWE_REQUIRED_BUT_TOKEN_NOT_JWE", new Object[] { clientConfig.getId() });
             throw new JWTTokenValidationFailedException(errorMsg);
         }
@@ -382,7 +383,7 @@ public class Jose4jUtil extends CommonJose4jUtils {
         String refreshToken = null;
         String clientId = clientConfig.getClientId();
         try {
-            if (JweHelper.isJwe(jwtString)) {
+            if (JsonUtils.isJwe(jwtString)) {
                 jwtString = JweHelper.extractJwsFromJweToken(jwtString, clientConfig, null);
             }
             JwtContext jwtContext = parseJwtWithoutValidation(jwtString);
@@ -464,7 +465,7 @@ public class Jose4jUtil extends CommonJose4jUtils {
      */
     public JwtContext validateJwtStructureAndGetContext(String jwtString, ConvergedClientConfig clientConfig) throws Exception {
         checkJwtFormatAgainstConfigRequirements(jwtString, clientConfig);
-        if (JweHelper.isJwe(jwtString)) {
+        if (JsonUtils.isJwe(jwtString)) {
             jwtString = JweHelper.extractJwsFromJweToken(jwtString, clientConfig, null);
         }
         return parseJwtWithoutValidation(jwtString);

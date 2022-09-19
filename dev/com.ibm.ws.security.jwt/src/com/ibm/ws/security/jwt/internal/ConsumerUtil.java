@@ -46,6 +46,7 @@ import com.ibm.websphere.security.jwt.KeyStoreServiceException;
 import com.ibm.ws.kernel.productinfo.ProductInfo;
 import com.ibm.ws.security.common.crypto.KeyAlgorithmChecker;
 import com.ibm.ws.security.common.jwk.impl.JwKRetriever;
+import com.ibm.ws.security.common.jwk.utils.JsonUtils;
 import com.ibm.ws.security.common.time.TimeUtils;
 import com.ibm.ws.security.jwt.config.JwtConsumerConfig;
 import com.ibm.ws.security.jwt.config.MpConfigProperties;
@@ -377,11 +378,11 @@ public class ConsumerUtil {
 
     void checkJwtFormatAgainstConfigRequirements(String jwtString, JwtConsumerConfig config)
             throws InvalidTokenException {
-        if (JweHelper.isJwsRequired(config, mpConfigProps) && !JweHelper.isJws(jwtString)) {
+        if (JweHelper.isJwsRequired(config, mpConfigProps) && !JsonUtils.isJws(jwtString)) {
             String errorMsg = Tr.formatMessage(tc, "JWS_REQUIRED_BUT_TOKEN_NOT_JWS", new Object[] { config.getId() });
             throw new InvalidTokenException(errorMsg);
         }
-        if (JweHelper.isJweRequired(config, mpConfigProps) && !JweHelper.isJwe(jwtString)) {
+        if (JweHelper.isJweRequired(config, mpConfigProps) && !JsonUtils.isJwe(jwtString)) {
             String errorMsg = Tr.formatMessage(tc, "JWE_REQUIRED_BUT_TOKEN_NOT_JWE", new Object[] { config.getId() });
             throw new InvalidTokenException(errorMsg);
         }
@@ -406,7 +407,7 @@ public class ConsumerUtil {
 
     JwtContext parseNewJwtWithoutValidation(@Sensitive String jwtString, JwtConsumerConfig config)
             throws InvalidTokenException, InvalidJwtException {
-        if (JweHelper.isJwe(jwtString)) {
+        if (JsonUtils.isJwe(jwtString)) {
             jwtString = JweHelper.extractJwsFromJweToken(jwtString, config, mpConfigProps);
         }
         JwtConsumerBuilder builder = initializeJwtConsumerBuilderWithoutValidation(config);

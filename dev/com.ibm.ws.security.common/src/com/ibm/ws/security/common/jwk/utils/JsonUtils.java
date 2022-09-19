@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
@@ -75,6 +76,28 @@ public class JsonUtils {
     public static final String TS_ALIAS = "TrustStore_ALIAS";
 
     public static final String DELIMITER = ".";
+    private static final String NOT_PERIOD = "[^\\.]";
+    private static final Pattern JWS_PATTERN = Pattern.compile("^(" + NOT_PERIOD + "*\\.){2}" + NOT_PERIOD + "*$");
+    private static final Pattern JWE_PATTERN = Pattern.compile("^(" + NOT_PERIOD + "*\\.){4}" + NOT_PERIOD + "*$");
+
+
+    public static boolean isJws(String jwtString) {
+        if (jwtString == null || jwtString.isEmpty()) {
+            return false;
+        }
+
+        Matcher m = JWS_PATTERN.matcher(jwtString);
+        return m.matches();
+    }
+
+    public static boolean isJwe(String jwtString) {
+        if (jwtString == null || jwtString.isEmpty()) {
+            return false;
+        }
+
+        Matcher m = JWE_PATTERN.matcher(jwtString);
+        return m.matches();
+    }
 
     //    private static AtomicServiceReference<VirtualHost> virtualHostRef;
 
