@@ -24,6 +24,12 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.opensaml.core.config.Configuration;
+import org.opensaml.core.config.ConfigurationService;
+import org.opensaml.core.config.InitializationService;
+import org.opensaml.core.config.provider.MapBasedConfiguration;
+import org.opensaml.core.xml.config.XMLConfigurator;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistry;
 import org.opensaml.saml.common.SAMLObject;
 import org.opensaml.saml.saml2.core.Assertion;
 
@@ -32,6 +38,7 @@ import com.ibm.ws.security.saml.error.SamlException;
 import com.ibm.ws.security.saml.impl.Activator;
 import com.ibm.ws.security.saml.sso20.rs.ByteArrayDecoder;
 
+import net.shibboleth.utilities.java.support.xml.BasicParserPool;
 import test.common.SharedOutputManager;
 
 /**
@@ -101,6 +108,8 @@ public class Saml20TokenImplSerializationTest {
         Saml20Token saml = null;
         String issuer = "https://localhost:8960/idp/shibboleth";
         bytes = samltokentext.getBytes("UTF-8");
+        
+        start();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
         ByteArrayDecoder byteArrayDecoder = new ByteArrayDecoder();
         Object b = byteArrayDecoder.unmarshallMessage(byteArrayInputStream);
@@ -127,5 +136,81 @@ public class Saml20TokenImplSerializationTest {
         file.close();
 
         System.out.println("Object has been serialized");
+    }
+    public static void start() throws Exception {
+       
+        final String[] XML_CONFIGS = {
+                                                     "/default-config.xml",
+                                                     "/schema-config.xml",
+                                                     "/saml1-assertion-config.xml",
+                                                     "/saml1-metadata-config.xml",
+                                                     "/saml1-protocol-config.xml",
+                                                     "/saml2-assertion-config.xml",
+                                                     "/saml2-assertion-delegation-restriction-config.xml",
+                                                     "/saml2-ecp-config.xml",
+                                                     "/saml2-metadata-algorithm-config.xml",
+                                                     "/saml2-metadata-config.xml",
+                                                     "/saml2-metadata-idp-discovery-config.xml",
+                                                     "/saml2-metadata-query-config.xml",
+                                                     "/saml2-protocol-config.xml",
+                                                     "/saml2-protocol-thirdparty-config.xml",
+                                                     "/saml2-protocol-aslo-config.xml",
+                                                     "/saml2-channel-binding-config.xml",
+                                                     "/saml-ec-gss-config.xml",
+                                                     "/signature-config.xml",
+                                                     "/encryption-config.xml",
+                                                     "/xacml20-context-config.xml",
+                                                     "/xacml20-policy-config.xml",
+                                                     "/xacml10-saml2-profile-config.xml",
+                                                     "/xacml11-saml2-profile-config.xml",
+                                                     "/xacml2-saml2-profile-config.xml",
+                                                     "/xacml3-saml2-profile-config.xml"
+       };
+             
+            Configuration configuration = new MapBasedConfiguration();
+            ConfigurationService.setConfiguration(configuration);
+
+            XMLObjectProviderRegistry providerRegistry = new XMLObjectProviderRegistry();
+            configuration.register(XMLObjectProviderRegistry.class, providerRegistry,
+                                   ConfigurationService.DEFAULT_PARTITION_NAME);
+            try {
+                // We are not using org.apache.santuario.xmlsec
+                // We will need to initialize the xmlsec with our own security
+
+                Class<Configuration> clazz = Configuration.class;
+                XMLConfigurator configurator = new XMLConfigurator();
+                for (String config : XML_CONFIGS) {
+                    try {
+
+                        configurator.load(clazz.getResourceAsStream(config));
+                    } catch (Exception e) {
+
+                    }
+                }
+                // OpenSAMLUtil.initSamlEngine();
+
+                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                Thread thread = Thread.currentThread();
+                thread.setContextClassLoader(InitializationService.class.getClassLoader());
+                try {
+                    InitializationService.initialize();
+                } finally {
+                    thread.setContextClassLoader(loader);
+                }
+
+
+
+                BasicParserPool pp = new BasicParserPool();
+                pp.setNamespaceAware(true);
+                pp.setMaxPoolSize(50);
+                pp.initialize();
+                providerRegistry.setParserPool(pp);
+
+
+
+            } catch (Exception e) {
+
+            }
+
     }
 }
