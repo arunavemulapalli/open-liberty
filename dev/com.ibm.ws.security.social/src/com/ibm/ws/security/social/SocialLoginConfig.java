@@ -20,7 +20,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import com.ibm.websphere.ras.annotation.Sensitive;
 import com.ibm.ws.security.authentication.filter.AuthenticationFilter;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.social.error.SocialLoginException;
 
 public interface SocialLoginConfig {
@@ -48,7 +48,7 @@ public interface SocialLoginConfig {
 
     public String getUserApiResponseIdentifier();
 
-    public Cache getSocialLoginCookieCache();
+    public LocalCache getSocialLoginCookieCache();
 
     String getDisplayName();
 

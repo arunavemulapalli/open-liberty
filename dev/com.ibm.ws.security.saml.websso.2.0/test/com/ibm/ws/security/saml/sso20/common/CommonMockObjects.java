@@ -44,7 +44,7 @@ import org.opensaml.xmlsec.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xmlsec.signature.Signature;
 
 import com.ibm.websphere.security.saml2.Saml20Token;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.SsoConfig;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
@@ -81,7 +81,7 @@ public class CommonMockObjects {
     private final SsoSamlService ssoService = mockery.mock(SsoSamlService.class);
     private final SsoConfig ssoConfig = mockery.mock(SsoConfig.class);
     private final Saml20Token sso20Token = mockery.mock(Saml20Token.class);
-    private final Cache cache = mockery.mock(Cache.class);
+    private final LocalCache cache = mockery.mock(LocalCache.class);
     private final WebAppSecurityConfig webAppSecConfig = mockery.mock(WebAppSecurityConfig.class);
     private final BasicMessageContext basicMessageContext = mockery.mock(BasicMessageContext.class);
     private final Assertion assertion = mockery.mock(Assertion.class);
@@ -198,7 +198,7 @@ public class CommonMockObjects {
     /**
      * @return the cache
      */
-    public Cache getCache() {
+    public LocalCache getCache() {
         return cache;
     }
 

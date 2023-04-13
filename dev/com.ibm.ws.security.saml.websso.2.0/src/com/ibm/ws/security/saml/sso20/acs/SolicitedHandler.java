@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-2.0/
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
@@ -24,13 +24,15 @@ import org.joda.time.DateTime;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.authentication.cache.AuthCacheService;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
 import com.ibm.ws.security.saml.TraceConstants;
 import com.ibm.ws.security.saml.error.SamlException;
 import com.ibm.ws.security.saml.sso20.binding.BasicMessageContext;
+import com.ibm.ws.security.saml.sso20.internal.JCacheACSCache;
 import com.ibm.ws.security.saml.sso20.internal.utils.HttpRequestInfo;
 import com.ibm.ws.security.saml.sso20.internal.utils.InitialRequestUtil;
 import com.ibm.ws.security.saml.sso20.internal.utils.SamlUtil;
@@ -46,6 +48,7 @@ public class SolicitedHandler {
     Map<String, Object> parameters;
     SsoSamlService ssoService;
     InitialRequestUtil irUtil = new InitialRequestUtil();
+    AuthCacheService authCacheService;
 
     public SolicitedHandler(HttpServletRequest request,
                             HttpServletResponse response,
@@ -82,12 +85,12 @@ public class SolicitedHandler {
                 Tr.debug(tc, "SAML WEBSSO - SP Solicited flow (ACS) starting");
             }
             BasicMessageContext<?, ?> msgCtx = WebSSOConsumer.getInstance().handleSAMLResponse(request,
-                                                                                                  response,
-                                                                                                  ssoService,
-                                                                                                  relayState, // make sure the inResponse is in the SAMLAssertion
-                                                                                                  samlRequest);
+                                                                                               response,
+                                                                                               ssoService,
+                                                                                               relayState, // make sure the inResponse is in the SAMLAssertion
+                                                                                               samlRequest);
             // The msgCtx won't be null, otherwise, it throws Exception already
-            Cache cache = ssoService.getAcsCookieCache(samlRequest.getProviderName());
+            LocalCache cache = ssoService.getAcsCookieCache(samlRequest.getProviderName());
             // Cache won't be null, since getAcsCookieCache does not return null
             HttpRequestInfo requestInfo = msgCtx.getCachedRequestInfo();
             DateTime authnRequestExpiredTime = requestInfo.getBirthTime().plus(ssoService.getConfig().getAuthnRequestTime());
@@ -102,7 +105,8 @@ public class SolicitedHandler {
                                                      (ssoService.getConfig().getAuthnRequestTime()) / 60000, new Date(authnRequestExpiredTime.getMillis()), new Date() });
             }
             requestInfo.setWithFragmentUrl(request, response);
-            redirectToRelayState(msgCtx,
+            UserData data = msgCtx.getUserDataIfReady();
+            redirectToRelayState(data,
                                  samlRequest.getProviderName(),
                                  cache,
                                  requestInfo);
@@ -120,13 +124,22 @@ public class SolicitedHandler {
     /**
      * @throws Exception
      */
-    protected void redirectToRelayState(BasicMessageContext<?, ?> msgCtx,
+    protected void redirectToRelayState(UserData data,
                                         String providerName,
-                                        Cache cache,
+                                        LocalCache cache,
                                         HttpRequestInfo requestInfo) throws SamlException {
         String cacheId = SamlUtil.generateRandom(); // no need to Base64 encode
-        UserData data = msgCtx.getUserDataIfReady();
+        if (tc.isDebugEnabled()) {
+            Tr.debug(tc, "SAML WEBSSO - Saving acs data (saml token and validated assertion) in local cache");
+        }
         cache.put(cacheId, data);
+        if (cache instanceof JCacheACSCache) {
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "SAML WEBSSO - Saving acs data (saml token ONLY) in jcache backing cache");
+            }
+            ((JCacheACSCache) cache).getJCache().put(cacheId, data.getSamlToken()); //distributed cache
+        }
+
         requestInfo.redirectCachedHttpRequest(request,
                                               response,
                                               Constants.COOKIE_NAME_WAS_SAML_ACS + SamlUtil.hash(providerName),

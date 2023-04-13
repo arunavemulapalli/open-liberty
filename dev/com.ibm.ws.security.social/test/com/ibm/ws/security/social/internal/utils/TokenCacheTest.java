@@ -18,15 +18,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 
 public class TokenCacheTest {
 
-    private Cache cache;
+    private LocalCache cache;
 
     @Before
     public void setUp() throws Exception {
-        cache = new Cache(50000, 600000L); 
+        cache = new LocalCache(50000, 600000L); 
     }
 
     @After

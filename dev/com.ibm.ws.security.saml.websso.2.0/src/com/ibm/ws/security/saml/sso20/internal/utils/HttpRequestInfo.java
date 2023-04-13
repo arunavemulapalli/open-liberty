@@ -27,7 +27,7 @@ import org.joda.time.DateTime;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.error.SamlException;
@@ -50,7 +50,7 @@ public class HttpRequestInfo implements Serializable {
     public static final String METHOD_GET = "GET";
 
     // cache
-    static final Cache postCache = new Cache(0, 0); // one cache for all. 5 minutes lifetime by default
+    static final LocalCache postCache = new LocalCache(0, 0); // one cache for all. 5 minutes lifetime by default
 
     String requestURL; // The requestURL with query string
     String requestURLWithFragments = null; // The requestURL with query string and/or fragment. In post method, it may not have queries

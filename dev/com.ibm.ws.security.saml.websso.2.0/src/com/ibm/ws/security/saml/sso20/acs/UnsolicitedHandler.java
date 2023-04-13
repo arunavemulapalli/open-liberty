@@ -25,7 +25,7 @@ import org.opensaml.saml.saml2.core.Assertion;
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
@@ -146,7 +146,7 @@ public class UnsolicitedHandler {
             }
 
             // The msgCtx won't be null, otherwise, it throws Exception already
-            Cache cache = ssoService.getAcsCookieCache(samlRequest.getProviderName());
+            LocalCache cache = ssoService.getAcsCookieCache(samlRequest.getProviderName());
             // Cache won't be null, since getAcsCookieCache does not return null
             HttpRequestInfo requestInfo = getUnsolicitedRequestInfo(msgCtx, relayState, cache);
             requestInfo.setWithFragmentUrl(request, response);
@@ -171,7 +171,7 @@ public class UnsolicitedHandler {
      * @return
      * @throws SamlException
      */
-    HttpRequestInfo getUnsolicitedRequestInfo(BasicMessageContext<?, ?> msgCtx, String relayState, Cache cache) throws SamlException {
+    HttpRequestInfo getUnsolicitedRequestInfo(BasicMessageContext<?, ?> msgCtx, String relayState, LocalCache cache) throws SamlException {
         HttpRequestInfo requestInfo = getCachedRequestInfo(relayState, cache);
         // This got to be the idp_initiated. If not, it will fail when  we redirect the request
         if (requestInfo == null) {
@@ -185,7 +185,7 @@ public class UnsolicitedHandler {
      */
     protected void redirectToRelayState(BasicMessageContext<?, ?> msgCtx,
                                         String providerName,
-                                        Cache cache,
+                                        LocalCache cache,
                                         HttpRequestInfo requestInfo) throws SamlException {
         String cacheId = SamlUtil.generateRandom(); // no need to Base64 encode
         UserData data = msgCtx.getUserDataIfReady();
@@ -201,7 +201,7 @@ public class UnsolicitedHandler {
      * @return
      * @throws SamlException
      */
-    protected HttpRequestInfo getCachedRequestInfo(String relayState, Cache cache) throws SamlException {
+    protected HttpRequestInfo getCachedRequestInfo(String relayState, LocalCache cache) throws SamlException {
         if (relayState == null)
             return null;
         HttpRequestInfo requestInfo = null;

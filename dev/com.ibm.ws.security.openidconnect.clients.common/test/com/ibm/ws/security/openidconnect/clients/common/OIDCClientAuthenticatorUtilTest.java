@@ -49,7 +49,7 @@ import org.junit.rules.TestName;
 import com.google.gson.JsonObject;
 import com.ibm.ws.common.encoder.Base64Coder;
 import com.ibm.ws.security.common.crypto.HashUtils;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.openidconnect.common.Constants;
 import com.ibm.ws.security.openidconnect.token.IDToken;
 import com.ibm.ws.security.openidconnect.token.IDTokenValidationFailedException;
@@ -548,7 +548,7 @@ public class OIDCClientAuthenticatorUtilTest {
 
             final String myStateKey = ANOTHER_ORIGINAL_STATE;
             final String originalState = ANOTHER_ORIGINAL_STATE;
-            Cache requestStates = new Cache(0, 0);
+            LocalCache requestStates = new LocalCache(0, 0);
             requestStates.put(myStateKey, originalState);
 
             ProviderAuthenticationResult result = oidcCAUtil.authenticate(req, res, convClientConfig);
@@ -574,7 +574,7 @@ public class OIDCClientAuthenticatorUtilTest {
 
             final String myStateKey = ANOTHER_ORIGINAL_STATE;
             final String originalState = TEST_ORIGINAL_STATE;
-            Cache requestStates = new Cache(0, 0);
+            LocalCache requestStates = new LocalCache(0, 0);
             requestStates.put(myStateKey, originalState);
 
             ProviderAuthenticationResult result = oidcCAUtil.authenticate(req, res, convClientConfig);

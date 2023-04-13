@@ -27,9 +27,9 @@ import com.ibm.ws.security.common.TraceConstants;
  * Cache containing three internal tables in order to implement a
  * least-recently-used removal algorithm.
  */
-public class Cache {
+public class LocalCache {
 
-    private static final TraceComponent tc = Tr.register(Cache.class, TraceConstants.TRACE_GROUP, TraceConstants.MESSAGE_BUNDLE);
+    private static final TraceComponent tc = Tr.register(LocalCache.class, TraceConstants.TRACE_GROUP, TraceConstants.MESSAGE_BUNDLE);
 
     /**
      * Primary hash table containing the most recently used entries.
@@ -61,7 +61,7 @@ public class Cache {
      */
     private Timer timer;
 
-    public Cache(int entryLimit, long timeoutInMilliSeconds) {
+    public LocalCache(int entryLimit, long timeoutInMilliSeconds) {
         if (entryLimit > 0) {
             this.entryLimit = entryLimit;
         }

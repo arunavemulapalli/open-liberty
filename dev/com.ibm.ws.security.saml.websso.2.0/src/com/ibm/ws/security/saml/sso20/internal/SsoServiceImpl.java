@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-2.0/
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
@@ -38,7 +38,7 @@ import com.ibm.websphere.ssl.JSSEHelper;
 import com.ibm.websphere.ssl.SSLException;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 import com.ibm.ws.security.SecurityService;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.filemonitor.FileBasedActionable;
 import com.ibm.ws.security.filemonitor.SecurityFileMonitor;
 import com.ibm.ws.security.saml.Constants;
@@ -53,6 +53,8 @@ import com.ibm.ws.webcontainer.security.WebProviderAuthenticatorHelper;
 import com.ibm.wsspi.kernel.filemonitor.FileMonitor;
 import com.ibm.wsspi.kernel.service.utils.AtomicServiceReference;
 import com.ibm.wsspi.ssl.SSLSupport;
+
+import io.openliberty.jcache.CacheService;
 
 public class SsoServiceImpl implements SsoSamlService {
     public static final TraceComponent tc = Tr.register(SsoServiceImpl.class,
@@ -82,7 +84,7 @@ public class SsoServiceImpl implements SsoSamlService {
     public static final String KEY_SSL_SUPPORT = "sslSupport";
     protected AtomicServiceReference<SSLSupport> sslSupportRef = new AtomicServiceReference<SSLSupport>(KEY_SSL_SUPPORT);
 
-    static final HashMap<String, Cache> acsCookieCacheMap = new HashMap<String, Cache>();
+    static final HashMap<String, LocalCache> acsCookieCacheMap = new HashMap<String, LocalCache>();
 
     static final HashMap<String, UnsolicitedResponseCache> replayCacheMap = new HashMap<String, UnsolicitedResponseCache>();
 
@@ -95,7 +97,10 @@ public class SsoServiceImpl implements SsoSamlService {
     private SecurityFileMonitor idpMetadataFileMonitor;
     private ServiceRegistration<FileMonitor> idpMetadataFileMonitorRegistration;
 
-    public SsoServiceImpl() {};
+    private CacheService cacheService = null;
+
+    public SsoServiceImpl() {
+    };
 
     protected void setConfigurationAdmin(ConfigurationAdmin configAdmin) {
         this.configAdmin = configAdmin;
@@ -149,6 +154,28 @@ public class SsoServiceImpl implements SsoSamlService {
         }
     }
 
+    /**
+     * Set the {@link CacheService}.
+     *
+     * @param cacheService the {@link CacheService}
+     */
+    protected void setCacheService(CacheService cacheService) {
+        this.cacheService = cacheService;
+    }
+
+    /**
+     * Unset the {@link CacheService}.
+     *
+     * @param cacheService the {@link CacheService}
+     */
+    protected void unsetCacheService(CacheService cacheService) {
+        this.cacheService = null;
+    }
+    
+    public boolean isCacheServiceAvailable() {
+        return cacheService != null;
+    }
+
     @Activate
     protected void activate(ComponentContext cc, Map<String, Object> props) {
         providerId = (String) props.get(KEY_PROVIDER_ID);
@@ -176,7 +203,10 @@ public class SsoServiceImpl implements SsoSamlService {
         createFileMonitor(getSamlConfig());
         authHelper = new WebProviderAuthenticatorHelper(securityServiceRef);
         if (acsCookieCacheMap.get(providerId) == null) {
-            Cache cache = new Cache(0, 0);
+            LocalCache cache = new LocalCache(0, 0);
+            if (cacheService != null) {
+                cache = new JCacheACSCache(cacheService);
+            }
             synchronized (acsCookieCacheMap) {
                 acsCookieCacheMap.put(providerId, cache); // SsoServiceImpl
             }
@@ -257,10 +287,14 @@ public class SsoServiceImpl implements SsoSamlService {
      * @see com.ibm.ws.security.saml.SamlSsoService#getAcsCookieCache(java.lang.String)
      */
     @Override
-    public Cache getAcsCookieCache(String providerId) {
-        Cache cache = acsCookieCacheMap.get(providerId);
+    public LocalCache getAcsCookieCache(String providerId) {
+        LocalCache cache = acsCookieCacheMap.get(providerId);
         if (cache == null) {
-            cache = new Cache(0, 0);
+            if (isCacheServiceAvailable()) {
+                cache = new JCacheACSCache(this.cacheService);
+            } else {
+                cache = new LocalCache(0, 0);
+            }          
             synchronized (acsCookieCacheMap) {
                 acsCookieCacheMap.put(providerId, cache); //
             }
@@ -332,7 +366,7 @@ public class SsoServiceImpl implements SsoSamlService {
             if (props != null) {
                 keyStorePropValue = props.getProperty(propKey);
                 if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                    Tr.debug(tc, "KeyStore property ( " + propKey + " ) from default ssl config  " );
+                    Tr.debug(tc, "KeyStore property ( " + propKey + " ) from default ssl config  ");
                 }
             }
         }
@@ -352,7 +386,7 @@ public class SsoServiceImpl implements SsoSamlService {
         if (keyStoreName == null) {
             keyStoreName = getDefaultKeyStoreProperty("com.ibm.ssl.keyStoreName");
             if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                Tr.debug(tc, "KeyStore name from default ssl config  = ", keyStoreName );
+                Tr.debug(tc, "KeyStore name from default ssl config  = ", keyStoreName);
             }
         }
         KeyStoreService keyStoreService = getKeyStoreServiceRef().getService();
@@ -401,7 +435,7 @@ public class SsoServiceImpl implements SsoSamlService {
         if (keyStoreName == null) {
             keyStoreName = getDefaultKeyStoreProperty("com.ibm.ssl.keyStoreName");
             if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                Tr.debug(tc, "KeyStore name from default ssl config  = ", keyStoreName );
+                Tr.debug(tc, "KeyStore name from default ssl config  = ", keyStoreName);
             }
         }
         KeyStoreService keyStoreService = getKeyStoreServiceRef().getService();
@@ -489,7 +523,7 @@ public class SsoServiceImpl implements SsoSamlService {
         if (trustAnchorName == null || trustAnchorName.isEmpty()) {
             trustAnchorName = getDefaultKeyStoreProperty("com.ibm.ssl.trustStoreName");
             if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
-                Tr.debug(tc, "TrustStore name from default ssl config  = ", trustAnchorName );
+                Tr.debug(tc, "TrustStore name from default ssl config  = ", trustAnchorName);
             }
         }
 
@@ -544,7 +578,9 @@ public class SsoServiceImpl implements SsoSamlService {
         return isSamlInbound;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see com.ibm.ws.security.saml.SsoSamlService#getDefaultKeyStorePassword()
      */
     @Override

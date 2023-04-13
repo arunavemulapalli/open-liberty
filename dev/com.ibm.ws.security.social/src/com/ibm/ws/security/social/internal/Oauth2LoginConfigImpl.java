@@ -40,7 +40,7 @@ import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.websphere.ras.annotation.Sensitive;
 import com.ibm.ws.security.authentication.filter.AuthenticationFilter;
 import com.ibm.ws.security.common.config.CommonConfigUtils;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.social.SocialLoginConfig;
 import com.ibm.ws.security.social.SocialLoginService;
 import com.ibm.ws.security.social.SslRefInfo;
@@ -63,7 +63,7 @@ public class Oauth2LoginConfigImpl implements SocialLoginConfig {
 
     protected static final String KEY_UNIQUE_ID = "id";
     protected String uniqueId = null;
-    protected Cache cache = null;
+    protected LocalCache cache = null;
 
     public static final String KEY_clientId = "clientId";
     protected String clientId = null;
@@ -569,9 +569,9 @@ public class Oauth2LoginConfigImpl implements SocialLoginConfig {
      * (java.lang.String)
      */
     @Override
-    public Cache getSocialLoginCookieCache() {
+    public LocalCache getSocialLoginCookieCache() {
         if (cache == null) {
-            cache = new Cache(0, 0);
+            cache = new LocalCache(0, 0);
         }
         if (tc.isDebugEnabled()) {
             Tr.debug(tc, "socialLoginCockieCache cache:" + cache);

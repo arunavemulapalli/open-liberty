@@ -1,10 +1,10 @@
 /*******************************************************************************
- * Copyright (c) 2021 IBM Corporation and others.
+ * Copyright (c) 2021,2023 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-2.0/
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
@@ -27,7 +27,6 @@ import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.websphere.security.WebTrustAssociationException;
 import com.ibm.websphere.security.WebTrustAssociationFailedException;
-import com.ibm.ws.security.common.structures.Cache;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
@@ -193,21 +192,24 @@ public class SAMLResponseTAI extends SAMLRequestTAI {
     }
 
     boolean handledWithCookie(IExtendedRequest req, SsoRequest samlRequest) {
-        if (RequestUtil.isUnprocessedAcsCookiePresent(respSsoSamlServiceRef, req, samlRequest)) {
+        UserData userData = null;
+        userData = RequestUtil.getAndRemoveUnprocessedAcsCookie(respSsoSamlServiceRef, req, samlRequest);
+        //if (RequestUtil.isUnprocessedAcsCookiePresent(respSsoSamlServiceRef, req, samlRequest)) {
+        if (userData != null) {
+            samlRequest.setUserData(userData);
+            //cache.remove(acsCookieValue); // the acs cookie can only be used once
+            return true; // handle the request when it has the cached userData
             // Let check the if the acs cookie is in our cache
-            String spProviderId = samlRequest.getProviderName();
-            Cache cache = RequestUtil.getAcsCookieCacheForProvider(respSsoSamlServiceRef, spProviderId);
-            String acsCookieValue = RequestUtil.getAcsCookieValueFromRequest(req, spProviderId);
-            UserData userData = (UserData) cache.get(acsCookieValue);
-            if (userData != null) {
-                samlRequest.setUserData(userData);
-                cache.remove(acsCookieValue); // the acs cookie can only be used once
-                return true; // handle the request when it has the cached userData
+            //String spProviderId = samlRequest.getProviderName();
+            //LocalCache cache = RequestUtil.getAcsCookieCacheForProvider(respSsoSamlServiceRef, spProviderId);
+            //String acsCookieValue = RequestUtil.getAcsCookieValueFromRequest(req, spProviderId);
+            //UserData userData = (UserData) cache.get(acsCookieValue);
+            //if (userData != null) {
+            //    samlRequest.setUserData(userData);
+            //    cache.remove(acsCookieValue); // the acs cookie can only be used once
+            //    return true; // handle the request when it has the cached userData
             } else {
                 return false;
             }
-        }
-        return false;
     }
-
 }

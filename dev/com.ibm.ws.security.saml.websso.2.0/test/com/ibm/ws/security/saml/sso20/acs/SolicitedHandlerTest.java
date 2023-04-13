@@ -34,7 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.SsoConfig;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
@@ -55,7 +55,7 @@ public class SolicitedHandlerTest {
     private static final CommonMockObjects common = new CommonMockObjects();
     private static final Mockery mockery = common.getMockery();
 
-    private static final Cache cache = common.getCache();
+    private static final LocalCache cache = common.getCache();
     private static final HttpServletRequest request = common.getServletRequest();
     private static final HttpServletResponse response = common.getServletResponse();
     private static final ForwardRequestInfo requestInfo = common.getRequestInfo();

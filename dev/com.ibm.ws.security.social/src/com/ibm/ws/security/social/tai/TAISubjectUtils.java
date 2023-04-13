@@ -30,7 +30,7 @@ import com.ibm.websphere.security.jwt.JwtToken;
 import com.ibm.websphere.security.social.UserProfile;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
 import com.ibm.ws.security.common.jwk.subject.mapping.AttributeToSubject;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.jwt.builder.utils.BuilderUtils;
 import com.ibm.ws.security.social.SocialLoginConfig;
 import com.ibm.ws.security.social.TraceConstants;
@@ -46,7 +46,7 @@ public class TAISubjectUtils {
 
     public static final TraceComponent tc = Tr.register(TAISubjectUtils.class, TraceConstants.TRACE_GROUP, TraceConstants.MESSAGE_BUNDLE);
 
-    private static Cache tokenCache = new Cache(50000, 600000L); // TODO: Determine if cache settings should be configurable.;
+    private static LocalCache tokenCache = new LocalCache(50000, 600000L); // TODO: Determine if cache settings should be configurable.;
 
     TAIWebUtils taiWebUtils = new TAIWebUtils();
     TAIEncryptionUtils taiEncryptionUtils = new TAIEncryptionUtils();

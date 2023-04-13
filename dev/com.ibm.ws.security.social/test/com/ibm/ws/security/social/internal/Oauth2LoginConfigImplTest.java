@@ -40,7 +40,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 
 import com.ibm.websphere.ssl.SSLException;
 import com.ibm.ws.security.authentication.filter.AuthenticationFilter;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.social.Constants;
 import com.ibm.ws.security.social.SocialLoginService;
 import com.ibm.ws.security.social.UserApiConfig;
@@ -898,7 +898,7 @@ public class Oauth2LoginConfigImplTest extends CommonConfigTestClass {
             });
             configImpl = getActivatedConfig(getRequiredConfigProps());
 
-            Cache result = configImpl.getSocialLoginCookieCache();
+            LocalCache result = configImpl.getSocialLoginCookieCache();
             assertNotNull("Cache should have been created for us, so result should not have been null.", result);
             assertEquals("Size of new cache did not match expected value.", DEFAULT_CACHE_LIMIT, result.size());
 

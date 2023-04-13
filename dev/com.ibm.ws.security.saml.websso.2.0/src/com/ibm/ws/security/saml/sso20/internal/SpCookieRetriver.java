@@ -100,4 +100,40 @@ public class SpCookieRetriver {
         return customCacheKey;
     }
 
+    /**
+     * @param custom_cache_key
+     */
+    public Subject getSubjectFromAcs2SPCookie(String custom_cache_key) {
+        Subject result = null;
+        if (authCacheService == null) {
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "ERROR: No activated authCacheService, no cached subject");
+            }
+            return null;
+        }
+        if (custom_cache_key != null) {
+            result = authCacheService.getSubject(custom_cache_key);
+        }
+        if (tc.isDebugEnabled()) {
+            Tr.debug(tc, "Get Subject:" + result);
+        }
+        return result;
+    }
+
+    /**
+     * @param custom_cache_key
+     */
+    public void removeAcs2SPSubject(String custom_cache_key) {        
+        if (authCacheService != null) {
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "remove Acs2SP Subject");
+            }
+            authCacheService.remove(custom_cache_key);
+            return;
+        }
+        if (tc.isDebugEnabled()) {
+            Tr.debug(tc, "Does not remove Acs2SP Subject");
+        }
+    }
+
 }

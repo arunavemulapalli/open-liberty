@@ -41,7 +41,7 @@ import org.opensaml.saml.saml2.core.Subject;
 import org.opensaml.saml.saml2.core.SubjectConfirmation;
 import org.opensaml.saml.saml2.core.SubjectConfirmationData;
 
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.SsoConfig;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
@@ -65,7 +65,7 @@ public class UnsolicitedHandlerTest {
     private static final CommonMockObjects common = new CommonMockObjects();
     private static final Mockery mockery = common.getMockery();
 
-    private static final Cache cache = common.getCache();
+    private static final LocalCache cache = common.getCache();
     private static final HttpServletRequest request = common.getServletRequest();
     private static final HttpServletResponse response = common.getServletResponse();
     private static final ForwardRequestInfo requestInfo = common.getRequestInfo();

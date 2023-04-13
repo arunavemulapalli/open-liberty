@@ -34,7 +34,7 @@ import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
 import com.ibm.ws.security.authentication.filter.AuthenticationFilter;
 import com.ibm.ws.security.common.config.CommonConfigUtils;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.social.SocialLoginConfig;
 import com.ibm.ws.security.social.SocialLoginService;
 import com.ibm.ws.security.social.TraceConstants;
@@ -177,7 +177,7 @@ public class OkdServiceLoginImpl implements SocialLoginConfig {
     }
 
     @Override
-    public Cache getSocialLoginCookieCache() {
+    public LocalCache getSocialLoginCookieCache() {
         return null;
     }
 

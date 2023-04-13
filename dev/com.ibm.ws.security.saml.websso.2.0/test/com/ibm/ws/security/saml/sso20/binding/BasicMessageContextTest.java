@@ -57,7 +57,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.SsoConfig;
 import com.ibm.ws.security.saml.SsoRequest;
 import com.ibm.ws.security.saml.SsoSamlService;
@@ -88,7 +88,7 @@ public class BasicMessageContextTest {
     private final DateTime date = new DateTime(2015, 6, 12, 15, 23, 0, 0);
     private static List<XMLObject> listXMLObjects = new ArrayList<XMLObject>();
 
-    private static final Cache cache = mockery.mock(Cache.class);
+    private static final LocalCache cache = mockery.mock(LocalCache.class);
     private static final SsoSamlService ssoService = mockery.mock(SsoSamlService.class, "SsoServiceCTX");
     private static final SsoConfig ssoConfig = mockery.mock(SsoConfig.class, "SsoConfigCTX");
     private static final SsoRequest ssoRequest = mockery.mock(SsoRequest.class, "SsoRequestCTX");

@@ -47,7 +47,7 @@ import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.SsoConfig;
 import com.ibm.ws.security.saml.SsoRequest;
@@ -278,7 +278,7 @@ public class BasicMessageContext<InboundMessageType extends SAMLObject, Outbound
         this.externalRelayState = externalRelayState;
         this.samlRequest = samlRequest;
         if (externalRelayState != null) { // has to be SP_INITI
-            Cache cache = ssoService.getAcsCookieCache(samlRequest.getProviderName());
+            LocalCache cache = ssoService.getAcsCookieCache(samlRequest.getProviderName());
             String cacheKey = externalRelayState.substring(Constants.SP_INITAL.length());
             cachedRequestInfo = (HttpRequestInfo) cache.get(cacheKey);
             if (cachedRequestInfo == null) {

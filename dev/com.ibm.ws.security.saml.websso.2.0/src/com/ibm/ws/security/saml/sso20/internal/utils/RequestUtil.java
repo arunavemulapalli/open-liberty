@@ -29,13 +29,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.x509.BasicX509Credential;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
+import com.ibm.websphere.security.saml2.Saml20Token;
 import com.ibm.ws.ffdc.annotation.FFDCIgnore;
-import com.ibm.ws.security.common.structures.Cache;
+import com.ibm.ws.security.common.structures.LocalCache;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.SsoConfig;
 import com.ibm.ws.security.saml.SsoRequest;
@@ -43,6 +45,7 @@ import com.ibm.ws.security.saml.SsoSamlService;
 import com.ibm.ws.security.saml.error.SamlException;
 import com.ibm.ws.security.saml.impl.KnownSamlUrl;
 import com.ibm.ws.security.saml.sso20.binding.BasicMessageContext;
+import com.ibm.ws.security.saml.sso20.internal.JCacheACSCache;
 import com.ibm.ws.webcontainer.internalRuntimeExport.srt.IPrivateRequestAttributes;
 import com.ibm.ws.webcontainer.security.ReferrerURLCookieHandler;
 import com.ibm.ws.webcontainer.security.WebAppSecurityCollaboratorImpl;
@@ -69,7 +72,7 @@ public class RequestUtil extends KnownSamlUrl {
      * @param req
      */
     public static void cacheRequestInfo(String requestId, SsoSamlService ssoService, HttpRequestInfo requestInfo) {
-        Cache cache = ssoService.getAcsCookieCache(ssoService.getProviderId());
+        LocalCache cache = ssoService.getAcsCookieCache(ssoService.getProviderId());
         cache.put(requestId, requestInfo);
     }
 
@@ -366,6 +369,15 @@ public class RequestUtil extends KnownSamlUrl {
         }
         return false;
     }
+    
+    public static UserData getAndRemoveUnprocessedAcsCookie(ConcurrentServiceReferenceMap<String, SsoSamlService> ssoSamlServiceRef, IExtendedRequest req, SsoRequest samlRequest) {
+        String spProviderId = samlRequest.getProviderName();
+        String acsCookieValue = getAcsCookieValueFromRequest(req, spProviderId);
+        if (acsCookieValue != null && !acsCookieValue.isEmpty()) {
+            return getAndRemoveAcsCookieFromCache(ssoSamlServiceRef, spProviderId, acsCookieValue);
+        }
+        return null;
+    }
 
     public static String getAcsCookieValueFromRequest(IExtendedRequest req, String spProviderId) {
         String cookieName = Constants.COOKIE_NAME_WAS_SAML_ACS + SamlUtil.hash(spProviderId);
@@ -375,16 +387,60 @@ public class RequestUtil extends KnownSamlUrl {
         }
         return null;
     }
+    
+    static UserData getAndRemoveAcsCookieFromCache(ConcurrentServiceReferenceMap<String, SsoSamlService> ssoSamlServiceRef, String spProviderId, String acsCookieValue) {
+        LocalCache cache = getAcsCookieCacheForProvider(ssoSamlServiceRef, spProviderId);
+        if (cache == null) {
+            return null;
+        }
+        Object data = null;
+        data = cache.get(acsCookieValue);
+        if (data != null) {
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "SAML WEBSSO - retrieved acs data from local cache and will remove it from caches!");
+            }
+            cache.remove(acsCookieValue);
+            if (cache instanceof JCacheACSCache) {
+                ((JCacheACSCache) cache).getJCache().remove(acsCookieValue);
+            }
+            return (UserData)data;
+        }
+        if (cache instanceof JCacheACSCache) {
+            data = ((JCacheACSCache) cache).getJCache().get(acsCookieValue);
+            if (data != null) {
+                if (tc.isDebugEnabled()) {
+                    Tr.debug(tc, "SAML WEBSSO - retrieved acs data from jcache backing cache!");
+                }
+                ((JCacheACSCache) cache).getJCache().remove(acsCookieValue);
+                Assertion local = null;
+                Saml20Token token = (Saml20Token)data;
+                try {
+                    return new UserData(local, token);
+                } catch (SamlException e) {
+                    return null;
+                }
+            }
+        }
+        return null;       
+    }
 
     static boolean isAcsCookieInCache(ConcurrentServiceReferenceMap<String, SsoSamlService> ssoSamlServiceRef, String spProviderId, String acsCookieValue) {
-        Cache cache = getAcsCookieCacheForProvider(ssoSamlServiceRef, spProviderId);
+        LocalCache cache = getAcsCookieCacheForProvider(ssoSamlServiceRef, spProviderId);
         if (cache == null) {
             return false;
         }
-        return (cache.get(acsCookieValue) != null);
+        if (cache instanceof JCacheACSCache) {
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "@AMMI SAML WEBSSO - checking jcache backing cache contains acs data!");
+            }
+            return ((JCacheACSCache) cache).getJCache().containsKey(acsCookieValue);
+        } else {
+            return (cache.get(acsCookieValue) != null);
+        }
+        
     }
 
-    public static Cache getAcsCookieCacheForProvider(ConcurrentServiceReferenceMap<String, SsoSamlService> ssoSamlServiceRef, String spProviderId) {
+    public static LocalCache getAcsCookieCacheForProvider(ConcurrentServiceReferenceMap<String, SsoSamlService> ssoSamlServiceRef, String spProviderId) {
         SsoSamlService samlService = ssoSamlServiceRef.getService(spProviderId);
         if (samlService != null) {
             return samlService.getAcsCookieCache(spProviderId);
