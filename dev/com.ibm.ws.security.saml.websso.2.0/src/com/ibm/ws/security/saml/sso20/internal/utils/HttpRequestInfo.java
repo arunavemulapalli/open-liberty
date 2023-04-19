@@ -202,7 +202,7 @@ public class HttpRequestInfo implements Serializable {
      * @param cookieValue --
      * @throws SamlException
      */
-    public void redirectCachedHttpRequest(HttpServletRequest request, HttpServletResponse response, String cookieName, String cookieValue) throws SamlException {
+    public void redirectCachedHttpRequest(HttpServletRequest request, HttpServletResponse response, String cookieName, String cookieValue, String postParamsCookieValue) throws SamlException {
         // handling cookie and headers
         if (cookieName != null && cookieValue != null) {
             RequestUtil.createCookie(request,
@@ -214,7 +214,7 @@ public class HttpRequestInfo implements Serializable {
         if (METHOD_POST.equalsIgnoreCase(this.method)) {
             // cookie name is:
             //     Constants.COOKIE_NAME_WAS_SAML_ACS + SamlUtil.hash(providerName)
-            String savePostId = SamlUtil.generateRandom(12);
+            String savePostId = postParamsCookieValue != null ? postParamsCookieValue : SamlUtil.generateRandom(12);
             String cacheKey = SamlUtil.hash(savePostId);
             String postCookieName = getPostCookieName(cookieName);
             RequestUtil.createCookie(request,
@@ -408,9 +408,14 @@ public class HttpRequestInfo implements Serializable {
         if (tc.isDebugEnabled()) {
             Tr.debug(tc, "savePostIdBytes:", savePostIdBytes);
         }
-        if (savePostIdBytes == null || savePostIdBytes.length < 8) // length ought to be 12
+        if (savePostIdBytes == null || savePostIdBytes.length < 8) {// length ought to be 12
             return; // no cookie found
-
+        } else {
+            // cleanup cookie
+            RequestUtil.removeCookie(request,
+                                     response,
+                                     postCookieName);
+        }
         String savePostId = null;
         try {
             savePostId = new String(savePostIdBytes, Constants.UTF8);
@@ -424,8 +429,9 @@ public class HttpRequestInfo implements Serializable {
         if (tc.isDebugEnabled()) {
             Tr.debug(tc, "requestInfo is:", requestInfo);
         }
+        InitialRequestUtil irUtil = new InitialRequestUtil();
         if (requestInfo != null) {
-            String callingUrl = request.getRequestURL().toString(); // keep this for restore the saved parameters (on SAMLReqponseTai)
+            String callingUrl = request.getRequestURL().toString(); // keep this for restore the saved parameters (on SAMLResponseTai)
             if (tc.isDebugEnabled()) {
                 Tr.debug(tc, "callingUrl:", callingUrl);
                 Tr.debug(tc, "reqUrl:", requestInfo.reqUrl);
@@ -441,11 +447,35 @@ public class HttpRequestInfo implements Serializable {
                     }
                     throw new SamlException(e);
                 }
-                // clean up cookie and cached recordss
-                RequestUtil.removeCookie(request,
-                                         response,
-                                         postCookieName);
+                // cleanup cache
                 postCache.remove(cacheKey);
+                // cleanup initial request cookie
+                irUtil.removeCookie(Constants.ACS_INITAL+savePostId, request, response);
+            }
+        } else {
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "Found Post Params cookie but cannot access requestInfo from local cache : ", requestInfo);
+            }
+            requestInfo = irUtil.recreateHttpRequestInfo(Constants.ACS_INITAL+savePostId, request, response, samlRequest.getSsoSamlService());
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "Recreated requestInfo : ", requestInfo);
+            }
+            String callingUrl = request.getRequestURL().toString(); // keep this for restore the saved parameters (on SAMLResponseTai)
+            if (tc.isDebugEnabled()) {
+                Tr.debug(tc, "callingUrl:", callingUrl);
+                Tr.debug(tc, "reqUrl:", requestInfo.reqUrl);
+            }
+            if (requestInfo != null && callingUrl.equals(requestInfo.reqUrl)) {
+             // Found and need to restore the savedPostParams
+                extRequest.setMethod(METHOD_POST); // put the method as POST
+                try {
+                    extRequest.setInputStreamData((HashMap) requestInfo.savedPostParams);
+                } catch (IOException e) {
+                    if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+                        Tr.debug(tc, "An exception setting InputStreamData : ", new Object[] { e });
+                    }
+                    //throw new SamlException(e);
+                }
             }
         }
     }
@@ -463,5 +493,10 @@ public class HttpRequestInfo implements Serializable {
 
             }
         }
+    }
+
+    public String getRequestType() {
+        // TODO Auto-generated method stub
+        return this.method;
     }
 }

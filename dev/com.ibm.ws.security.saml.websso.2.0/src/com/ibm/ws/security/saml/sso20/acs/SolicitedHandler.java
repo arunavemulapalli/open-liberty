@@ -35,6 +35,7 @@ import com.ibm.ws.security.saml.sso20.binding.BasicMessageContext;
 import com.ibm.ws.security.saml.sso20.internal.JCacheACSCache;
 import com.ibm.ws.security.saml.sso20.internal.utils.HttpRequestInfo;
 import com.ibm.ws.security.saml.sso20.internal.utils.InitialRequestUtil;
+import com.ibm.ws.security.saml.sso20.internal.utils.RequestUtil;
 import com.ibm.ws.security.saml.sso20.internal.utils.SamlUtil;
 import com.ibm.ws.security.saml.sso20.internal.utils.UserData;
 
@@ -49,6 +50,7 @@ public class SolicitedHandler {
     SsoSamlService ssoService;
     InitialRequestUtil irUtil = new InitialRequestUtil();
     AuthCacheService authCacheService;
+    static public final String COOKIE_NAME_SAVED_PARAMS = "WASSamlParams_";
 
     public SolicitedHandler(HttpServletRequest request,
                             HttpServletResponse response,
@@ -131,19 +133,42 @@ public class SolicitedHandler {
         String cacheId = SamlUtil.generateRandom(); // no need to Base64 encode
         if (tc.isDebugEnabled()) {
             Tr.debug(tc, "SAML WEBSSO - Saving acs data (saml token and validated assertion) in local cache");
-        }
+        }  
         cache.put(cacheId, data);
+        String providerHashcode = SamlUtil.hash(providerName);
+        String postParamsCookieValue = null;
         if (cache instanceof JCacheACSCache) {
             if (tc.isDebugEnabled()) {
                 Tr.debug(tc, "SAML WEBSSO - Saving acs data (saml token ONLY) in jcache backing cache");
             }
             ((JCacheACSCache) cache).getJCache().put(cacheId, data.getSamlToken()); //distributed cache
         }
-
+        if ("POST".equalsIgnoreCase(requestInfo.getRequestType())) {
+            // cookie name is:
+            //     Constants.COOKIE_NAME_WAS_SAML_ACS + SamlUtil.hash(providerName)
+            //String savePostId = SamlUtil.generateRandom(12);
+            //String cacheKey = SamlUtil.hash(savePostId);               
+            //RequestUtil.createCookie(request,
+            //                         response,
+            //                        COOKIE_NAME_SAVED_PARAMS + providerHashcode,
+            //                        savePostId); // this will also addCookie to the response
+            postParamsCookieValue = SamlUtil.generateRandom(12);
+            //String postParamsCacheKey = SamlUtil.hash(savePostId);               
+            //RequestUtil.createCookie(request,
+            //                         response,
+            //                         COOKIE_NAME_SAVED_PARAMS + providerHashcode,
+            //                         savePostId); // this will also addCookie to the response
+            
+            
+            //((JCacheACSCache) cache).getJCache().put(postParamsCacheKey, requestInfo);
+            InitialRequestUtil irUtil = new InitialRequestUtil();
+            irUtil.handleSerializingInitialRequest(request, response, Constants.ACS_INITAL, postParamsCookieValue, requestInfo, ssoService);
+            
+        }
         requestInfo.redirectCachedHttpRequest(request,
                                               response,
-                                              Constants.COOKIE_NAME_WAS_SAML_ACS + SamlUtil.hash(providerName),
-                                              cacheId);
+                                              Constants.COOKIE_NAME_WAS_SAML_ACS + providerHashcode,
+                                              cacheId, postParamsCookieValue);
     }
 
 }

@@ -103,6 +103,7 @@ public class Constants {
 
     public static final String SP_INITAL = "sp_initial_";
     public static final String IDP_INITAL = "idp_initial_";
+    public static final String ACS_INITAL = "acs_initial_";
     public static final String DEFAULT_NAME_ID_FORMAT = NameIDType.EMAIL;
     public static final String DEFAULT_IDP_NAME_ID_FORMAT = "email";
 

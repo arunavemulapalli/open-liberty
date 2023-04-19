@@ -193,7 +193,7 @@ public class UnsolicitedHandler {
         requestInfo.redirectCachedHttpRequest(request,
                                               response,
                                               Constants.COOKIE_NAME_WAS_SAML_ACS + SamlUtil.hash(providerName),
-                                              cacheId);
+                                              cacheId, null);
     }
 
     /**

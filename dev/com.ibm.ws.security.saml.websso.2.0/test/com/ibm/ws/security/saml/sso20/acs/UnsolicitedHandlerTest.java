@@ -155,7 +155,7 @@ public class UnsolicitedHandlerTest {
                 one(requestInfo).redirectCachedHttpRequest(with(any(HttpServletRequest.class)),
                                                            with(any(HttpServletResponse.class)),
                                                            with(any(String.class)),
-                                                           with(any(String.class)));
+                                                           with(any(String.class)), with(any(String.class)));
 
                 one(basicMessageContext).getUserDataIfReady();
                 will(returnValue(userData));

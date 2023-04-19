@@ -117,11 +117,13 @@ public class SolicitedHandlerTest {
                 one(ssoConfig).getAuthnRequestTime();
                 will(returnValue(600000L));
 
+                one(requestInfo).getRequestType();
+                will(returnValue("GET"));
                 one(requestInfo).setWithFragmentUrl(request, response);
                 one(requestInfo).redirectCachedHttpRequest(with(any(HttpServletRequest.class)),
                                                            with(any(HttpServletResponse.class)),
                                                            with(any(String.class)),
-                                                           with(any(String.class)));
+                                                           with(any(String.class)), with(any(String.class)));
 
                 one(basicMessageContext).getUserDataIfReady();
                 will(returnValue(userData));

@@ -431,7 +431,7 @@ public class RequestUtil extends KnownSamlUrl {
         }
         if (cache instanceof JCacheACSCache) {
             if (tc.isDebugEnabled()) {
-                Tr.debug(tc, "@AMMI SAML WEBSSO - checking jcache backing cache contains acs data!");
+                Tr.debug(tc, "SAML WEBSSO - checking jcache backing cache contains acs data!");
             }
             return ((JCacheACSCache) cache).getJCache().containsKey(acsCookieValue);
         } else {
