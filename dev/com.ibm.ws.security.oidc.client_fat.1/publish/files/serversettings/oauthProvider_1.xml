@@ -40,6 +40,7 @@
 				name="client01"
 				secret="{xor}LDo8LTor"
 				displayname="client01"
+				resourceIds="update_23_res_1,update_23_res_2"
 				redirect="http://localhost:${bvt.prop.security_2_HTTP_default}/oidcclient/redirect/client01,
 							https://localhost:${bvt.prop.security_2_HTTP_default.secure}/oidcclient/redirect/client01,
 							https://localhost:${bvt.prop.security_2_HTTP_default.secure}/oidcclient/redirect/oauthClient,

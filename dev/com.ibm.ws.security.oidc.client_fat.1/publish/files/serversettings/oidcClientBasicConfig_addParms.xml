@@ -25,6 +25,7 @@
 		clientId="client01"
 		clientSecret="{xor}LDo8LTor"
 		sharedKey="secret"
+		resource="update_23_res_1,update_23_res_2"
 		mapIdentityToRegistryUser="true"
 		httpsRequired="false"
 		redirectToRPHostAndPort="http://localhost:${bvt.prop.security_2_HTTP_default}"

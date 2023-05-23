@@ -26,6 +26,7 @@
 		clientSecret="{xor}LDo8LTor"
 		sharedKey="secret"
 		grantType="implicit"
+		resource="update_23_res_1,update_23_res_2"
 		mapIdentityToRegistryUser="true"
 		httpsRequired="false"
 		issuerIdentifier="https://localhost:${bvt.prop.security_1_HTTP_default.secure}/oidc/endpoint/OidcConsentConfigSample"

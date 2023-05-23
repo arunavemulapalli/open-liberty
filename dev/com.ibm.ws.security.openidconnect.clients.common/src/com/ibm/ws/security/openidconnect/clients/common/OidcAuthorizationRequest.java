@@ -229,6 +229,7 @@ public class OidcAuthorizationRequest extends AuthorizationRequest {
         if (isImplicit) {
             addImplicitParameters(authzParameters);
         }
+        addResourceParameters(authzParameters); // add resource in both authorization code and implicit flows
         // look for custom params in the configuration to send to the authorization ep
         addCustomParams(authzParameters);
 
@@ -252,6 +253,10 @@ public class OidcAuthorizationRequest extends AuthorizationRequest {
 
     void addImplicitParameters(AuthorizationRequestParameters authzParameters) throws UnsupportedEncodingException {
         authzParameters.addParameter("response_mode", "form_post");
+
+    }
+    
+    void addResourceParameters(AuthorizationRequestParameters authzParameters) throws UnsupportedEncodingException {
         // add resource
         String resources = getResourcesParameter();
         if (resources != null) {
