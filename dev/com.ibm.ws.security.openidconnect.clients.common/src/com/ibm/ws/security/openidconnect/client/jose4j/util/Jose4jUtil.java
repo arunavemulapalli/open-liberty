@@ -345,28 +345,6 @@ public class Jose4jUtil {
         return retriever;
     }
 
-    protected ProviderAuthenticationResult createProviderAuthenticationResult(JSONObject jobj, ConvergedClientConfig clientConfig, String accessToken) {
-
-        AttributeToSubject attributeToSubject = new AttributeToSubject(clientConfig, jobj, accessToken);
-        if (attributeToSubject.checkUserNameForNull())/* || attributeToSubject.checkForNullRealm()) */ { //TODO enable this null realm checking once userinfo code is fixed to emit "iss"
-            return new ProviderAuthenticationResult(AuthResult.SEND_401, HttpServletResponse.SC_UNAUTHORIZED);
-        }
-
-        Hashtable<String, Object> customProperties = attributeToSubject.handleCustomProperties();
-        if (accessToken != null) {
-            customProperties.put(Constants.ACCESS_TOKEN, accessToken);
-        }
-
-        ProviderAuthenticationResult oidcResult = null;
-        // The doMapping() will save the current time. ClientConstants.CREDENTIAL_STORING_TIME_MILLISECONDS
-        // In this RS scenario, the access_token is considered as expired. It should not be reused.
-        // Since there are no expires_in attribute in the customProperties, it indicates the access_token is expired
-        // **Unless we change the design. But this needs to think much further, such as: the customized WASOidcClient_ token... etc
-        oidcResult = attributeToSubject.doMapping(customProperties, new Subject());
-
-        return oidcResult;
-    }
-
     @FFDCIgnore({ Exception.class })
     public ProviderAuthenticationResult createResultWithJose4JForJwt(
             String jwtString,

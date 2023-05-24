@@ -45,11 +45,6 @@ public class AttributeToSubject {
     public AttributeToSubject() {
     }
 
-    public AttributeToSubject(ConvergedClientConfig clientConfig, JSONObject jobj, String accessToken) {
-        earlyinit(clientConfig, accessToken);
-        initialize(clientConfig, jobj, accessToken);
-    }
-
     public void earlyinit(ConvergedClientConfig clientConfig, String tokenStr) {
         tokenString = tokenStr;
         this.clientConfig = clientConfig;
