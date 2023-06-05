@@ -188,6 +188,8 @@ public class OidcClientConfigImpl implements OidcClientConfig {
     public static final String OPDISCOVERY_SCOPES = "scopes_supported";
     public static final String OPDISCOVERY_IDTOKEN_SIGN_ALG = "id_token_signing_alg_values_supported";
     public static final String CFG_KEY_TOKEN_REUSE = "tokenReuse";
+    
+    public static final String CFG_KEY_USE_ANY_TOKEN_FOR_CLAIMS = "useAnyTokenForClaims";
 
     static String contextPath = "/oidcclient";
 
@@ -309,6 +311,8 @@ public class OidcClientConfigImpl implements OidcClientConfig {
     private boolean tokenReuse = false;
 
     private final OidcSessionCache oidcSessionCache = new InMemoryOidcSessionCache();
+    
+    private boolean useAnyTokenForClaims = false;
 
     // see defect 218708
     static String firstRandom = OidcUtil.generateRandom(32);
@@ -556,6 +560,7 @@ public class OidcClientConfigImpl implements OidcClientConfig {
         accessTokenCacheEnabled = configUtils.getBooleanConfigAttribute(props, CFG_KEY_ACCESS_TOKEN_CACHE_ENABLED, accessTokenCacheEnabled);
         accessTokenCacheTimeout = configUtils.getLongConfigAttribute(props, CFG_KEY_ACCESS_TOKEN_CACHE_TIMEOUT, accessTokenCacheTimeout);
         pkceCodeChallengeMethod = configUtils.getConfigAttribute(props, CFG_KEY_PKCE_CODE_CHALLENGE_METHOD);
+        useAnyTokenForClaims = configUtils.getBooleanConfigAttribute(props, CFG_KEY_USE_ANY_TOKEN_FOR_CLAIMS, useAnyTokenForClaims);
         // TODO - 3Q16: Check the validationEndpointUrl to make sure it is valid
         // before continuing to process this config
         // checkValidationEndpointUrl();
@@ -635,6 +640,7 @@ public class OidcClientConfigImpl implements OidcClientConfig {
             Tr.debug(tc, "accessTokenCacheEnabled:" + accessTokenCacheEnabled);
             Tr.debug(tc, "accessTokenCacheTimeout:" + accessTokenCacheTimeout);
             Tr.debug(tc, "pkceCodeChallengeMethod:" + pkceCodeChallengeMethod);
+            Tr.debug(tc, "useAnyTokenForClaims:" + useAnyTokenForClaims);
         }
     }
 
@@ -1939,6 +1945,11 @@ public class OidcClientConfigImpl implements OidcClientConfig {
     @Override
     public PrivateKey getPrivateKeyForClientAuthentication() throws Exception {
         return PrivateKeyJwtAuthMethod.getPrivateKeyForClientAuthentication(clientId, keyAliasName, getKeyStoreRef(), keyStoreServiceRef.getService());
+    }
+
+    @Override
+    public boolean useAnyTokenForClaims() {
+        return useAnyTokenForClaims;
     }
 
 }

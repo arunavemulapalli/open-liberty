@@ -976,4 +976,9 @@ public class OidcLoginConfigImpl extends Oauth2LoginConfigImpl implements Conver
         return PrivateKeyJwtAuthMethod.getPrivateKeyForClientAuthentication(clientId, keyAliasName, getKeyStoreRef(), JwtUtils.getKeyStoreService());
     }
 
+	@Override
+	public boolean useAnyTokenForClaims() {
+		return false;
+	}
+
 }

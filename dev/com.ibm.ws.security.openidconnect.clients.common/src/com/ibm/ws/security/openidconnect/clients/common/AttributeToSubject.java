@@ -10,9 +10,12 @@
 package com.ibm.ws.security.openidconnect.clients.common;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletResponse;
@@ -272,6 +275,67 @@ public class AttributeToSubject {
         return null;
 
     }
+    Object getClaimValueFromTokens(OidcTokenImplBase idToken, String claim) {
+        boolean useanytoken = this.clientConfig.useAnyTokenForClaims();
+        Object claimValue = null;
+        
+        Map<String, Object> jwtClaims = null;
+        if (idToken != null && claim != null) {
+            claimValue = idToken.getClaim(claim);
+            if (claimValue == null && useanytoken) {
+                claimValue = getClaimValueFromAccessToken(idToken.getAccessToken(), claim);
+                if (claimValue == null) {
+                    // TODO: look at user info response 
+                }
+            }
+        }
+        return claimValue;
+    }
+
+    /**
+     * @param accessToken
+     * @return
+     */
+    private Map<String, Object> checkTokenFormatAndGetClaims(String accessToken) {
+        Map<String, Object> jwtClaims = null;
+        String[] parts = accessToken.split(Pattern.quote(".")); // split out the "parts" (header, payload and signature)
+        
+        if (parts.length > 1) {           
+                try {
+                    String claimsAsJsonString = new String(Base64.getDecoder().decode(parts[1]), "UTF-8");
+                    jwtClaims = org.jose4j.jwt.JwtClaims.parse(claimsAsJsonString).getClaimsMap();
+                } catch (Exception e1) {
+    
+                }
+    
+        } else {
+            // do nothing
+        }
+        return jwtClaims;
+    }
+
+    /**
+     * @param accessToken
+     * @return
+     */
+    private Object getClaimValueFromAccessToken(String accessToken, String claim) {
+        
+        Map<String, Object> jwtClaims = null;
+        jwtClaims = checkTokenFormatAndGetClaims(accessToken);
+        if (jwtClaims != null) {
+            return jwtClaims.get(claim);
+        }
+        return null;
+    }
+
+    /**
+     * @param accessToken
+     * @return
+     */
+    private boolean isJwtFormat(String accessToken) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
     @SuppressWarnings("unchecked")
     public AttributeToSubject(ConvergedClientConfig clientConfig, OidcTokenImplBase idToken) {
@@ -284,13 +348,13 @@ public class AttributeToSubject {
         if (userName == null || userName.isEmpty()) {
             uid = clientConfig.getUserIdentifier();
             if (uid != null && !uid.isEmpty()) {
-                userName = (String) idToken.getClaim(uid);
+                userName = (String)getClaimValueFromTokens(idToken, uid);//(String) idToken.getClaim(uid); //@AV999
             } else {
                 attrUsedToCreateSubject = clientConfig.isSocial() ? "userNameAttribute" : "userIdentityToCreateSubject";
                 uid = clientConfig.getUserIdentityToCreateSubject();
                 if (uid != null && !uid.isEmpty()) {
                     //uid = ClientConstants.SUB;
-                    userName = (String) idToken.getClaim(uid);
+                    userName = (String)getClaimValueFromTokens(idToken, uid);//(String) idToken.getClaim(uid); //@AV999
                     if (tc.isDebugEnabled()) {
                         Tr.debug(tc, "The " + attrUsedToCreateSubject + " config attribute is used");
                     }
@@ -312,13 +376,14 @@ public class AttributeToSubject {
                 if (realm == null || realm.isEmpty()) {
                     realm = clientConfig.getRealmName();
                     if (realm == null) {
-                        if (idToken.getClaim(clientConfig.getRealmIdentifier()) != null) {
-                            if (idToken.getClaim(clientConfig.getRealmIdentifier()) instanceof String) {
-                                realm = (String) idToken.getClaim(clientConfig.getRealmIdentifier());
+                        Object realmobject = getClaimValueFromTokens(idToken, clientConfig.getRealmIdentifier()); //@AV999
+                        if (/*idToken.getClaim(clientConfig.getRealmIdentifier())*/ realmobject != null) {
+                            if (/*idToken.getClaim(clientConfig.getRealmIdentifier())*/ realmobject instanceof String) {
+                                realm = (String) realmobject; //idToken.getClaim(clientConfig.getRealmIdentifier());
                             }
                         }
                         if (realm == null || realm.isEmpty()) {
-                            realm = (String) idToken.getClaim(ClientConstants.ISS);
+                            realm = (String) getClaimValueFromTokens(idToken, ClientConstants.ISS);//(String) idToken.getClaim(ClientConstants.ISS); //@AV999
                         }
                     }
 
@@ -328,15 +393,16 @@ public class AttributeToSubject {
                 }
 
                 if (uniqueSecurityName == null || uniqueSecurityName.isEmpty()) {
-                    if (idToken.getClaim(clientConfig.getUniqueUserIdentifier()) instanceof String) {
-                        uniqueSecurityName = (String) idToken.getClaim(clientConfig.getUniqueUserIdentifier());
+                    Object uniqueSecurityObject = getClaimValueFromTokens(idToken, clientConfig.getUniqueUserIdentifier()); //@AV999
+                    if (/*idToken.getClaim(clientConfig.getUniqueUserIdentifier())*/uniqueSecurityObject instanceof String) {
+                        uniqueSecurityName = (String) uniqueSecurityObject;//(String) idToken.getClaim(clientConfig.getUniqueUserIdentifier());
                     }
                     if (uniqueSecurityName == null || uniqueSecurityName.isEmpty()) {
                         uniqueSecurityName = userName;
                     }
                 }
                 if (groupIds == null || groupIds.isEmpty()) {
-                    Object objGroupIds = idToken.getClaim(clientConfig.getGroupIdentifier());
+                    Object objGroupIds = getClaimValueFromTokens(idToken, clientConfig.getGroupIdentifier());//idToken.getClaim(clientConfig.getGroupIdentifier()); //@AV999
                     if (objGroupIds != null) {
                         if (objGroupIds instanceof ArrayList<?>) {
                             groupIds = (ArrayList<String>) objGroupIds;

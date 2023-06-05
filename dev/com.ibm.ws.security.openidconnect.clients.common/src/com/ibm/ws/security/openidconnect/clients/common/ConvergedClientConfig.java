@@ -143,5 +143,7 @@ public interface ConvergedClientConfig extends JwtConsumerConfig {
 
     @Sensitive
     public PrivateKey getPrivateKeyForClientAuthentication() throws Exception;
+    
+    public boolean useAnyTokenForClaims();
 
 }
