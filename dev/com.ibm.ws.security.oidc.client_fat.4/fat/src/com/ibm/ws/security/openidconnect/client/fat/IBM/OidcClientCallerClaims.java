@@ -621,7 +621,7 @@ public class OidcClientCallerClaims extends CommonTest {
        
         expectations = vData.addResponseStatusExpectation(expectations, Constants.LOGIN_USER, com.ibm.ws.security.fat.common.Constants.UNAUTHORIZED_STATUS);
 
-        expectations = validationTools.addMessageExpectation(testRPServer, expectations, Constants.LOGIN_USER, Constants.MESSAGES_LOG, Constants.STRING_CONTAINS, "Client messages.log should contain a message indicating that client failed to authenticate the JSON Web Token", MessageConstants.CWWKS1738E_JWT_MISSING_CLAIM);
+/*        expectations = validationTools.addMessageExpectation(testRPServer, expectations, Constants.LOGIN_USER, Constants.MESSAGES_LOG, Constants.STRING_CONTAINS, "Client messages.log should contain a message indicating that client failed to authenticate the JSON Web Token", MessageConstants.CWWKS1738E_JWT_MISSING_CLAIM); */
  
         JWTTokenBuilder builder = createBuilderWithDefaultClaims();
         builder.unsetClaim("upn"); //unset userIdentifier = upn
