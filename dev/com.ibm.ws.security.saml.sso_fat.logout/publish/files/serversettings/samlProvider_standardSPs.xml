@@ -222,4 +222,29 @@
 			trustedIssuers="ALL_ISSUERS" />
 	</samlWebSso20>
 	
+		<samlWebSso20
+		id="sp1NotSigned"
+		authFilterRef="myAuthFilterNotSigned"
+		wantAssertionsSigned="false"
+		signatureMethodAlgorithm="SHA256"
+		authnRequestsSigned="false"
+		forceAuthn="false"
+		isPassive="false"
+ 		idpMetadata="${server.config.dir}/imports/${tfimIdpServer}/Fed1MetaData.xml"
+		keyStoreRef="samlKeyStore"
+		keyAlias="sslspservercert"
+		trustStoreRef="serverStore"
+		clockSkew="300s"
+		tokenReplayTimeout="30m"
+		nameIDFormat="unspecified"
+		includeTokenInSubject="true"
+		mapToUserRegistry="User"
+		loginPageURL="${loginPageURLVar_sp1}"
+		disableLtpaCookie="${disableLtpaCookieVar}"
+		spCookieName="WASSamlSP_sp1NotSigned"
+		spLogout="${spLogoutVar}"
+	>
+	</samlWebSso20>
+
+	
 </server>    

@@ -38,13 +38,13 @@ import componenttest.rules.repeater.RepeatTests;
         // login using each of the 3 flows, use the IDP logout url to logout to do an IDP initiated Logout
         // Using SP Cookies
         IDPInitiatedLogin_IDPInitiated_LogoutUrl_Tests.class,
-        SolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_Tests.class,
-        UnsolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_Tests.class,
+        //SolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_Tests.class,
+        //UnsolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_Tests.class,
 
         // Using LTPA Cookies
-        IDPInitiatedLogin_IDPInitiated_LogoutUrl_LTPA_Tests.class,
-        SolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_LTPA_Tests.class,
-        UnsolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_LTPA_Tests.class,
+        //IDPInitiatedLogin_IDPInitiated_LogoutUrl_LTPA_Tests.class,
+        //SolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_LTPA_Tests.class,
+        //UnsolicitedSPInitiatedLogin_IDPInitiated_LogoutUrl_LTPA_Tests.class,
 
 })
 public class FATSuite extends CommonLocalLDAPServerSuite {

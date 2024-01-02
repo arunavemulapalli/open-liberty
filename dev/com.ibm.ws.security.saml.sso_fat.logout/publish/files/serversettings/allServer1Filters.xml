@@ -139,5 +139,13 @@
 			urlPattern="/samlclient/fat/server2_sp2/|/samlclient_server2_sp2/|httpServletRequestApp/server2_sp2/logout"
 			matchType="contains" />
 	</authFilter>
+	
+	
+	<authFilter id="myAuthFilterNotSigned">
+		<requestUrl
+			id="myRequestUrl"
+			urlPattern="/samlclient/fat/sp1NotSigned/|/samlclient_sp1NotSigned/|httpServletRequestApp/sp1NotSigned/logout"
+			matchType="contains" />
+	</authFilter>
 
 </server>    

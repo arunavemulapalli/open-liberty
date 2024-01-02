@@ -150,6 +150,7 @@ public abstract class SAMLLogoutCommonTest extends SAMLCommonTest {
 
         private CookieType spCookieType;
         private String sp1CookieName;
+        private String sp1NotSignedCookieName;
         private String sp2CookieName;
         private String sp5CookieName;
         private String sp13CookieName;
@@ -176,6 +177,7 @@ public abstract class SAMLLogoutCommonTest extends SAMLCommonTest {
             case LTPACOOKIE:
                 Log.info(thisClass, "CookieInfo", "Using LTPA type Cookies");
                 sp1CookieName = SAMLConstants.LTPA_TOKEN_NAME;
+                sp1NotSignedCookieName = SAMLConstants.LTPA_TOKEN_NAME;
                 sp2CookieName = SAMLConstants.LTPA_TOKEN_NAME;
                 sp5CookieName = SAMLConstants.LTPA_TOKEN_NAME;
                 sp13CookieName = SAMLConstants.LTPA_TOKEN_NAME;
@@ -196,6 +198,7 @@ public abstract class SAMLLogoutCommonTest extends SAMLCommonTest {
             case SPCOOKIES:
                 Log.info(thisClass, "CookieInfo", "====   Using SP type Cookies");
                 sp1CookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp1";
+                sp1NotSignedCookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp1NotSigned";
                 sp2CookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp2";
                 sp5CookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp5";
                 sp13CookieName = SAMLConstants.SP_COOKIE_PREFIX + "_sp13";
@@ -217,6 +220,7 @@ public abstract class SAMLLogoutCommonTest extends SAMLCommonTest {
                 Log.info(thisClass, "CookieInfo", "Using Mixed LTPA and SP type Cookies");
             default:
                 sp1CookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp1";
+                sp1NotSignedCookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp1NotSigned";
                 sp2CookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp2";
                 sp5CookieName = SAMLConstants.SP_COOKIE_PREFIX + "sp5";
                 sp13CookieName = SAMLConstants.LTPA_TOKEN_NAME;
@@ -247,6 +251,10 @@ public abstract class SAMLLogoutCommonTest extends SAMLCommonTest {
 
         public String getSp1CookieName() {
             return sp1CookieName;
+        }
+        
+        public String getSp1NotSignedCookieName() {
+            return sp1NotSignedCookieName;
         }
 
         public String getSp2CookieName() {

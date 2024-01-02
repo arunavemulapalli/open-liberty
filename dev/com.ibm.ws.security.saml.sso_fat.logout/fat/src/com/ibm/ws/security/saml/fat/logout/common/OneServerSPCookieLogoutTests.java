@@ -73,6 +73,7 @@ public class OneServerSPCookieLogoutTests extends SAMLLogoutCommonTest {
 
     static String[] twoServer_allSPCookies_list = null;
     static String[] sp1_list = null;
+    static String[] sp1NotSigned_list = null;
     static String[] sp13_list = null;
 
     // initialize some common cookie lists
@@ -90,6 +91,7 @@ public class OneServerSPCookieLogoutTests extends SAMLLogoutCommonTest {
         // These are defined and set for as appropriate for this test class
         twoServer_allSPCookies_list = new String[] { cookieInfo.getSp1CookieName(), cookieInfo.getSp2CookieName(), cookieInfo.getServer2Sp1CookieName(), cookieInfo.getServer2Sp2CookieName() };
         sp1_list = new String[] { cookieInfo.getSp1CookieName() };
+        sp1NotSigned_list = new String[] { cookieInfo.getSp1NotSignedCookieName() };
         sp13_list = new String[] { cookieInfo.getSp13CookieName() };
 
     }
@@ -120,11 +122,11 @@ public class OneServerSPCookieLogoutTests extends SAMLLogoutCommonTest {
         WebClient webClient = getAndSaveWebClient();
 
         SAMLTestSettings updatedTestSettings = testSettings.copyTestSettings();
-        updatedTestSettings.updatePartnerInSettings("sp1", true);
+        updatedTestSettings.updatePartnerInSettings("sp1NotSigned", true);
 
-        List<validationData> expectations = setDefaultGoodSAMLLoginExpectations(loginLogoutFlow, updatedTestSettings, sp1_list);
+        List<validationData> expectations = setDefaultGoodSAMLLoginExpectations(loginLogoutFlow, updatedTestSettings, sp1NotSigned_list);
         expectations = setGoodSAMLLogoutExpectations(expectations, loginLogoutFlow, updatedTestSettings, 1);
-        expectations = setCookieExpectationsForFlow(expectations, loginLogoutFlow, LoggedInToOneSP, sp1_list, cookieInfo.getSp1CookieName());
+        expectations = setCookieExpectationsForFlow(expectations, loginLogoutFlow, LoggedInToOneSP, sp1NotSigned_list, cookieInfo.getSp1NotSignedCookieName());
 
         genericSAML(_testName, webClient, updatedTestSettings, loginLogoutFlow, expectations);
     }
