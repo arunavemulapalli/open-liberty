@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021,2024 IBM Corporation and others.
+ * Copyright (c) 2021,2025 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -159,6 +159,7 @@ public class SsoConfigImplTest {
         SAML_CONFIG_PROPS.put(SsoConfigImpl.KEY_reAuthnCushion, 0L);
         SAML_CONFIG_PROPS.put(SsoConfigImpl.KEY_useRelayStateForTarget, true);
         SAML_CONFIG_PROPS.put(SsoConfigImpl.KEY_servletRequestLogoutPerformsSamlLogout, true);
+        SAML_CONFIG_PROPS.put(SsoConfigImpl.KEY_nonceEnabled, false);
     }
 
     private void setFilterIdMapProps() {

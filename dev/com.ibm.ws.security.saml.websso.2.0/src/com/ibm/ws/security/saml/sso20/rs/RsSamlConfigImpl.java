@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021,2024 IBM Corporation and others.
+ * Copyright (c) 2021,2025 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -100,6 +100,7 @@ public class RsSamlConfigImpl extends PkixTrustEngineConfig implements SsoConfig
     static final String KEY_targetPageUrl = "targetPageUrl";
     static final String KEY_useRelayStateForTarget = "useRelayStateForTarget";
     static final String KEY_servletRequestLogoutPerformsSamlLogout = "spLogout";
+    static final String KEY_nonceEnabled = "scriptNonce";
 
     static final String[] notInUseAttributes = new String[] {
                                                               KEY_authnRequestsSigned, KEY_forceAuthn, KEY_isPassive,
@@ -109,7 +110,7 @@ public class RsSamlConfigImpl extends PkixTrustEngineConfig implements SsoConfig
                                                               KEY_sessionNotOnOrAfter, KEY_includeTokenInSubject, KEY_spCookieName,
                                                               KEY_spHostAndPort, KEY_targetPageUrl, KEY_httpsRequired,
                                                               KEY_allowCustomCacheKey, KEY_createSession, KEY_reAuthnOnAssertionExpire,
-                                                              KEY_reAuthnCushion
+                                                              KEY_reAuthnCushion, KEY_nonceEnabled
     };
 
     static final String ignoreAttributes;
@@ -150,6 +151,7 @@ public class RsSamlConfigImpl extends PkixTrustEngineConfig implements SsoConfig
     String[] audiences = new String[] { "ANY" };
     private final String bundleLocation;
     private boolean servletRequestLogoutPerformsSamlLogout = false;
+    boolean nonceEnabled = false;
 
     public RsSamlConfigImpl(ComponentContext cc,
                             Map<String, Object> props,
@@ -546,6 +548,11 @@ public class RsSamlConfigImpl extends PkixTrustEngineConfig implements SsoConfig
     public boolean isAuthnRequestsSigned() {
         return unexpectedCall(false);
     };
+
+    @Override
+    public boolean isNonceEnabled() {
+        return unexpectedCall(false);
+    }
 
     /*
      * (non-Javadoc)

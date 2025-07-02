@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.ibm.websphere.ras.Tr;
 import com.ibm.websphere.ras.TraceComponent;
+import com.ibm.ws.security.common.random.RandomUtils;
 import com.ibm.ws.security.common.web.JavaScriptUtils;
 import com.ibm.ws.security.saml.Constants;
 import com.ibm.ws.security.saml.error.SamlException;
@@ -46,7 +47,11 @@ public class ForwardRequestInfo extends HttpRequestInfo implements Serializable 
 
     boolean bNeedFragment = true;
 
-    private long fragmentCookieMaxAge = 10*60*1000; //10 minutes
+    private long fragmentCookieMaxAge = 10 * 60 * 1000; //10 minutes
+
+    boolean nonceEnabled = false; // if this is true, allow execution of in-line scripts when using CSP
+
+    private final int NONCE_LENGTH = 30;
 
     /**
      *
@@ -152,7 +157,7 @@ public class ForwardRequestInfo extends HttpRequestInfo implements Serializable 
                     }
                     sb.append("\" method=\"" + this.method + "\"><div>");
                     if (this.bNeedFragment) {
-                        sb.append(handleFragmentCookies());
+                        sb.append(handleFragmentCookiesAndNonce());
                     }
                     if (this.parameters != null && !this.parameters.isEmpty()) {
                         Set<Entry<String, String[]>> set = this.parameters.entrySet();
@@ -228,16 +233,26 @@ public class ForwardRequestInfo extends HttpRequestInfo implements Serializable 
     /**
      * @return
      */
-    String handleFragmentCookies() {
+    String handleFragmentCookiesAndNonce() {
 
         String cookieName = Constants.COOKIE_NAME_SAML_FRAGMENT + getFragmentCookieId();
         String cookieMaxAge = "expires=" + getSamlRequestCookieTimeoutString() + ";";
-
         if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
             Tr.debug(tc, "cookie " + cookieName + " , " + cookieMaxAge);
         }
         StringBuffer sb = new StringBuffer();
-        sb.append("\n<SCRIPT type=\"TEXT/JAVASCRIPT\" language=\"JavaScript\">\n");
+        sb.append("\n<SCRIPT type=\"TEXT/JAVASCRIPT\" language=\"JavaScript\"");
+        nonceEnabled = true; //TODO: hardcode the value for test fix
+        if (this.nonceEnabled) {
+            String noncerand = " nonce=\"" + RandomUtils.getRandomAlphaNumeric(NONCE_LENGTH) + "\">";
+            sb.append(noncerand);
+            if (TraceComponent.isAnyTracingEnabled() && tc.isDebugEnabled()) {
+                Tr.debug(tc, "OLGH32028 , nonce=" + noncerand);
+            }
+        } else {
+            sb.append(">");
+        }
+        sb.append("\n");
         sb.append("document.cookie = '");
         sb.append(cookieName + "=' + encodeURIComponent(window.location.href) + ';" + cookieMaxAge + "Path=/;"); // session cookie
         JavaScriptUtils jsUtils = new JavaScriptUtils();
@@ -413,6 +428,14 @@ public class ForwardRequestInfo extends HttpRequestInfo implements Serializable 
      */
     public void setFragmentCookieMaxAge(long authnRequestTime) {
         this.fragmentCookieMaxAge = authnRequestTime;
+
+    }
+
+    /**
+     * @param nonceEnabled
+     */
+    public void setNonceEnabled(boolean nonceEnabled) {
+        this.nonceEnabled = nonceEnabled;
 
     }
 

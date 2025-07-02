@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021,2024 IBM Corporation and others.
+ * Copyright (c) 2021,2025 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
@@ -109,6 +109,8 @@ public class SsoConfigImpl extends PkixTrustEngineConfig implements SsoConfig, F
     static final String KEY_useRelayStateForTarget = "useRelayStateForTarget";
     public static final String KEY_postLogoutRedirectUrl = "postLogoutRedirectUrl";
 
+    static final String KEY_nonceEnabled = "scriptNonce";
+
     static final String[] notInUseAttributes = new String[] { KEY_headerName, KEY_audiences };
 
     static final String ignoreAttributes;
@@ -178,6 +180,8 @@ public class SsoConfigImpl extends PkixTrustEngineConfig implements SsoConfig, F
     boolean useRelayStateForTarget = true;
     String postLogoutRedirectUrl = null;
     private boolean servletRequestLogoutPerformsSamlLogout = false;
+
+    boolean nonceEnabled = false;
 
     static HashMap<String, String> nameIDFormatMap = new HashMap<String, String>();
     static {
@@ -294,6 +298,8 @@ public class SsoConfigImpl extends PkixTrustEngineConfig implements SsoConfig, F
         useRelayStateForTarget = (Boolean) props.get(KEY_useRelayStateForTarget);
         postLogoutRedirectUrl = configUtils.getConfigAttribute(props, KEY_postLogoutRedirectUrl);
         servletRequestLogoutPerformsSamlLogout = (Boolean) props.get(KEY_servletRequestLogoutPerformsSamlLogout);
+
+        nonceEnabled = (Boolean) props.get(KEY_nonceEnabled);
 
         // Handle the tc debug
         processPkixTrustEngine(props);
@@ -570,7 +576,8 @@ public class SsoConfigImpl extends PkixTrustEngineConfig implements SsoConfig, F
                                                           + "\nx509 cert list:" + pkixX509List.toString()
                                                           + "\ncrl list:" + pkixCrlList.toString())
                      + "\npostLogoutRedirectUrl:" + postLogoutRedirectUrl
-                     + "\nservletRequestLogoutPerformsSamlLogout: " + servletRequestLogoutPerformsSamlLogout;
+                     + "\nservletRequestLogoutPerformsSamlLogout: " + servletRequestLogoutPerformsSamlLogout
+                     + "\nscriptNonce: " + nonceEnabled;
         }
 
         return result;
@@ -949,6 +956,11 @@ public class SsoConfigImpl extends PkixTrustEngineConfig implements SsoConfig, F
     public void performFileBasedAction(Collection<File> createdFiles, Collection<File> modifiedFiles, Collection<File> deletedFiles) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public boolean isNonceEnabled() {
+        return this.nonceEnabled;
     }
 
 }

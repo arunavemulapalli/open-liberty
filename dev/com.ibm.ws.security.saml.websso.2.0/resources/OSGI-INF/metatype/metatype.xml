@@ -35,7 +35,8 @@
             	<Option label="%signatureMethodAlgorithm.SHA1"   value="SHA1" />
         </AD>        
         <AD id="createSession" name ="%createSession" description="%createSession.desc"
-            required="false" type="Boolean" default="true"/>        
+            required="false" type="Boolean" default="true"/>
+        <AD id="scriptNonce" name="%scriptNonce" description="%scriptNonce.desc" required="false" type="Boolean" default="false"/>        
         <AD id="authnRequestsSigned" name ="%authnRequestsSigned" description="%authnRequestsSigned.desc"
             required="false" type="Boolean" default="true"/>
             <AD id="includeX509InSPMetadata" name ="%includeX509InSPMetadata" description="%includeX509InSPMetadata.desc"
